@@ -255,16 +255,47 @@ textarea{width:100%;background:#0b2420;border:2px solid var(--line);border-radiu
 .ord{display:inline-grid;place-items:center;min-width:17px;height:17px;border-radius:50%;background:var(--line);font-size:11px;font-weight:700;margin-right:4px}
 .choices li{line-height:1.7}
 
+/* ---------- home / landing ---------- */
+.wrap.home{grid-template-columns:1fr;max-width:1120px}
+.wrap.home aside.setup{display:none}
+.brand{cursor:pointer;background:none;border:0;padding:0;color:inherit}
+.hero{text-align:center;padding:36px 8px 28px}
+.hero h1{font-family:var(--head);font-weight:800;font-size:clamp(28px,4.6vw,44px);line-height:1.12;letter-spacing:-.02em;margin:0 0 12px;text-wrap:balance}
+.hero h1 em{font-style:normal;color:var(--gold)}
+.hero p.sub{color:var(--muted);font-size:17px;max-width:640px;margin:0 auto 24px;text-wrap:pretty}
+.hero-form{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;background:var(--panel);border-radius:14px;padding:14px;max-width:620px;margin:0 auto;box-shadow:var(--shadow)}
+.hero-form .seed-input{flex:1 1 180px;min-width:0}
+.hero .try{margin-top:14px;font-size:14px;color:var(--muted)}
+.hero .try button{background:none;border:0;padding:0;color:var(--gold);font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.feat{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:8px 0 18px}
+.feat article{background:var(--panel);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:10px;border-top:5px solid var(--c,var(--line));box-shadow:var(--shadow)}
+.feat h2{margin:0;font-size:19px}
+.feat p{margin:0;color:var(--muted);font-size:14px}
+.feat ul{margin:0;padding-left:18px;color:var(--muted);font-size:14px}
+.feat ul li{margin:2px 0}
+.feat .go{margin-top:auto;align-self:flex-start}
+.feat .chips-ex{display:flex;flex-wrap:wrap;gap:6px}
+.feat .chips-ex button{background:var(--panel-2);border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:12.5px;font-weight:600;color:var(--ink);cursor:pointer}
+.feat .chips-ex button:hover{border-color:var(--gold);color:var(--gold)}
+.facts{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.facts div{background:rgba(16,48,42,.55);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:13.5px;color:var(--muted)}
+.facts b{display:block;color:var(--ink);font-size:14px;margin-bottom:2px}
+.home-foot{text-align:center;color:var(--dim);font-size:13px;padding:8px 0 4px}
+.home-foot a{color:var(--muted)}
+@media (max-width:900px){.feat{grid-template-columns:1fr}.facts{grid-template-columns:1fr 1fr}}
+@media (max-width:520px){.facts{grid-template-columns:1fr}.hero{padding-top:20px}.hero p.sub{font-size:15.5px}}
+
 </style>
 </head>
 <body>
 <header class="top">
-  <div class="brand"><b>Balatro</b> <i>Seed</i> Tool</div>
+  <button class="brand" id="brandHome" title="Home"><b>Balatro</b> <i>Seed</i> Tool</button>
   <nav class="tabs" role="tablist">
-    <button role="tab" data-tab="analyze" aria-selected="true">Analyze a seed</button>
+    <button role="tab" data-tab="home" aria-selected="true">Home</button>
+    <button role="tab" data-tab="analyze" aria-selected="false">Analyze a seed</button>
     <button role="tab" data-tab="find" aria-selected="false">Find seeds</button>
     <button role="tab" data-tab="saved" aria-selected="false">Saved seeds</button>
-    <a class="btn ghost small" href="/guide.pdf" target="_blank" rel="noopener">Guide</a>
+    <a class="btn ghost small" href="https://github.com/AbderahmaneH/balatro-seed-tool/blob/main/docs/GUIDE.md" target="_blank" rel="noopener">Guide</a>
   </nav>
   <div class="spacer"></div>
   <div class="engine-pill" id="enginePill"></div>
@@ -305,8 +336,56 @@ textarea{width:100%;background:#0b2420;border:2px solid var(--line);border-radiu
   </aside>
 
   <main>
+    <!-- ======================= home ======================= -->
+    <section id="tab-home">
+      <div class="hero">
+        <h1>See every shop, pack and <em>Soul</em> in a Balatro seed before you play it</h1>
+        <p class="sub">Plan a run step by step in the order you'd really play it, or search millions of seeds for the start you want. It reproduces the game's own randomness, right in your browser.</p>
+        <form class="hero-form" id="homeForm">
+          <input class="seed-input" id="homeSeed" maxlength="8" placeholder="SEED" autocomplete="off" spellcheck="false" aria-label="Seed to analyze">
+          <button class="btn blue" type="submit">Analyze</button>
+          <button class="btn" type="button" id="homeRnd">Random seed</button>
+        </form>
+        <p class="try">No seed in mind? Try <button type="button" data-example="ALEEB">ALEEB</button>: a Soul in all three ante-1 shops.</p>
+      </div>
+
+      <div class="feat">
+        <article style="--c:var(--blue)">
+          <h2>Analyze a seed</h2>
+          <ul>
+            <li>All 3 shops of every ante: cards, vouchers, both packs and what's inside</li>
+            <li>Skip tags, bosses, and every Soul with the legendary it gives</li>
+            <li>Reroll, buy, open packs and use cards in your own order; the result follows</li>
+            <li>“Find a card in this seed”: every way to get Blueprint, The Soul…</li>
+          </ul>
+          <button class="btn blue small go" data-goto="analyze">Open the analyzer</button>
+        </article>
+        <article style="--c:var(--red)">
+          <h2>Find seeds</h2>
+          <p>Describe what you want and search millions of seeds. Start from an example:</p>
+          <div class="chips-ex" id="homePresets"></div>
+          <button class="btn red small go" data-goto="find">Build your own search</button>
+        </article>
+        <article style="--c:var(--gold)">
+          <h2>Saved seeds</h2>
+          <p>Keep the seeds you like with a note, reopen them in one click, and export or import the list as a file.</p>
+          <p>Saved in this browser only.</p>
+          <button class="btn gold small go" data-goto="saved">Open saved seeds</button>
+        </article>
+      </div>
+
+      <div class="facts">
+        <div><b>Nothing to install</b>Runs in your browser, on phones too. Download the HTML file to use it offline.</div>
+        <div><b>Matches the game</b>Same random number generator, pools and shop logic as Balatro.</div>
+        <div><b>Want more speed?</b>The <a href="https://github.com/AbderahmaneH/balatro-seed-tool#quick-start" target="_blank" rel="noopener">local app</a> adds a fast C engine and a GPU engine.</div>
+        <div><b>Run setup</b>Deck, stake, unlocks and jokers you own are set in the Run setup panel of the analyzer and finder.</div>
+      </div>
+
+      <p class="home-foot">Free and open source · <a href="https://github.com/AbderahmaneH/balatro-seed-tool" target="_blank" rel="noopener">GitHub</a> · <a href="https://github.com/AbderahmaneH/balatro-seed-tool/issues" target="_blank" rel="noopener">Report a seed that doesn't match the game</a><br>Fan-made, not affiliated with LocalThunk or Playstack.</p>
+    </section>
+
     <!-- ======================= analyze ======================= -->
-    <section id="tab-analyze">
+    <section id="tab-analyze" class="hidden">
       <div class="plate">
         <input class="seed-input" id="seed" maxlength="8" placeholder="SEED" autocomplete="off" spellcheck="false" aria-label="Seed">
         <button class="btn blue" id="go">Analyze</button>
@@ -338,7 +417,7 @@ textarea{width:100%;background:#0b2420;border:2px solid var(--line);border-radiu
       <div id="legendStrip" class="legend-strip"></div>
       <div id="invPanel"></div>
       <nav class="antenav" id="anteNav" aria-label="Jump to ante"></nav>
-      <div id="antesOut"><div class="empty">Type a seed (1–8 characters) and press Analyze.</div></div>
+      <div id="antesOut"><div class="empty">Type a seed (1–8 characters) and press Analyze, or try the example seed <button class="btn small gold" data-example="ALEEB">ALEEB</button></div></div>
     </section>
 
     <!-- ======================= find ======================= -->
@@ -401,9 +480,17 @@ textarea{width:100%;background:#0b2420;border:2px solid var(--line);border-radiu
 "use strict";
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+/* Only the last analyzed seed and the "Saved seeds" list survive a page reload. Everything else (run setup,
+   choices, finder conditions, tab) lives in memory, so every visit starts fresh on the home page. */
+const KEEP = new Set(['seed', 'saved']), MEM = {};
+try { for (const k of Object.keys(localStorage)) if (k.startsWith('bst.') && !KEEP.has(k.slice(4))) localStorage.removeItem(k); } catch(e){}
 const store = {
-  get(k, d){ try { const v = localStorage.getItem('bst.' + k); return v ? JSON.parse(v) : d; } catch(e){ return d; } },
-  set(k, v){ try { localStorage.setItem('bst.' + k, JSON.stringify(v)); } catch(e){} }
+  get(k, d){
+    if (!KEEP.has(k)) return k in MEM ? JSON.parse(MEM[k]) : d;
+    try { const v = localStorage.getItem('bst.' + k); return v ? JSON.parse(v) : d; } catch(e){ return d; } },
+  set(k, v){
+    if (!KEEP.has(k)) { MEM[k] = JSON.stringify(v); return; }
+    try { localStorage.setItem('bst.' + k, JSON.stringify(v)); } catch(e){} }
 };
 let META = null, LAST = null, JOB = null, POLL = null, RESULTS = [], LOCNAMES = [];
 const SEED_RE = /^[1-9A-NP-Z]{1,8}$/;
@@ -412,7 +499,7 @@ const SEED_CHARS = '123456789ABCDEFGHIJKLMNPQRSTUVWXYZ';
 /* ---------------- state ---------------- */
 const S = Object.assign({
   deck:'b_red', stake:1, unlocked:'all', take_souls:true, planets_played:false, start_consumables:'held', most_played:'',
-  own:[], locked:[], take:[], skips:[], skip_packs:[], picks:{}, pickLabels:{}, plan:{}, perkeo_copies:''
+  own:[], locked:[], take:[], skips:[], skip_packs:[], picks:{}, pickLabels:{}, plan:{}, perkeo_copies:'', v:7
 }, store.get('opts', {}));
 /* v7: the choices of a shop are now an ordered list of actions (S.plan[shopId]) instead of loose sets.
    Keep old reroll counts; the old "buy when offered" / sell / use lists have no position, so they are dropped. */
@@ -421,7 +508,7 @@ if (!(S.v >= 7)) {
   for (const [sid, n] of Object.entries(S.rerolls || {})) plan[sid] = Array.from({length: +n || 0}, () => ({t:'reroll'}));
   S.plan = plan; S.take = (S.v >= 6) ? S.take : [];
   for (const k of ['rerolls','buy_vouchers','sells','sellLabels','uses','useLabels']) delete S[k];
-  S.v = 7; try { localStorage.setItem('bst.opts', JSON.stringify(S)); } catch(e){}
+  S.v = 7; saveState();
 }
 S.plan = S.plan || {}; S.picks = S.picks || {}; S.pickLabels = S.pickLabels || {}; S.skips = S.skips || []; S.skip_packs = S.skip_packs || [];
 function saveState(){ store.set('opts', S); }
@@ -464,11 +551,17 @@ function download(name, text, type){
 /* ---------------- tabs ---------------- */
 document.querySelectorAll('nav.tabs button').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
 function showTab(t){
+  if (!['home','analyze','find','saved'].includes(t)) t = 'home';
   document.querySelectorAll('nav.tabs button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === t)));
-  for (const id of ['analyze','find','saved']) $('#tab-' + id).classList.toggle('hidden', id !== t);
+  for (const id of ['home','analyze','find','saved']) $('#tab-' + id).classList.toggle('hidden', id !== t);
+  document.querySelector('.wrap').classList.toggle('home', t === 'home');
   if (t === 'saved') renderSaved();
   store.set('tab', t);
 }
+$('#brandHome').addEventListener('click', () => { showTab('home'); window.scrollTo(0, 0); });
+document.querySelectorAll('[data-goto]').forEach(b => b.addEventListener('click', () => { showTab(b.dataset.goto); window.scrollTo(0, 0); }));
+function openFromHome(seed){ seedIn.value = seed; showTab('analyze'); window.scrollTo(0, 0); analyze(); }
+document.addEventListener('click', e => { const b = e.target.closest('[data-example]'); if (b) { e.preventDefault(); openFromHome(b.dataset.example); } });
 
 /* ---------------- setup panel ---------------- */
 function fillSetup(){
@@ -570,7 +663,12 @@ function removeBuy(id){ const sid = sidOfId(id), p = S.plan[sid] || [], i = p.fi
 
 /* ---------------- analyzer ---------------- */
 const seedIn = $('#seed');
-seedIn.value = store.get('seed', 'ALEEB');
+seedIn.value = store.get('seed', '');
+const homeSeed = $('#homeSeed');
+homeSeed.value = seedIn.value;            // the last seed analyzed, ready to reopen
+homeSeed.addEventListener('input', () => { homeSeed.value = homeSeed.value.toUpperCase().replace(/[^1-9A-NP-Z]/g, ''); });
+$('#homeForm').addEventListener('submit', e => { e.preventDefault(); if (homeSeed.value) openFromHome(homeSeed.value); else homeSeed.focus(); });
+$('#homeRnd').addEventListener('click', () => { let s = ''; for (let i = 0; i < 8; i++) s += SEED_CHARS[Math.floor(Math.random() * 34)]; openFromHome(s); });
 $('#antes').value = store.get('antes', 3);
 seedIn.addEventListener('input', () => { seedIn.value = seedIn.value.toUpperCase().replace(/[^1-9A-NP-Z]/g, ''); });
 seedIn.addEventListener('keydown', e => { if (e.key === 'Enter') analyze(); });
@@ -971,6 +1069,8 @@ const PRESETS = [
 ];
 $('#presets').innerHTML = PRESETS.map((p, i) => `<button data-p="${i}">${esc(p[0])}</button>`).join('');
 document.querySelectorAll('[data-p]').forEach(b => b.addEventListener('click', () => { CONDS = JSON.parse(JSON.stringify(PRESETS[+b.dataset.p][1])); saveConds(); renderConds(); }));
+$('#homePresets').innerHTML = [0, 2, 7, 6, 9].map(i => `<button data-hp="${i}">${esc(PRESETS[i][0])}</button>`).join('');
+document.querySelectorAll('[data-hp]').forEach(b => b.addEventListener('click', () => { CONDS = JSON.parse(JSON.stringify(PRESETS[+b.dataset.hp][1])); saveConds(); renderConds(); showTab('find'); window.scrollTo(0, 0); }));
 
 function spaceSize(){ let n = 0; for (let L = +$('#lenMin').value; L <= +$('#lenMax').value; L++) n += 34 ** L; return n; }
 function updateSpace(){
@@ -1161,10 +1261,8 @@ $('#savedImport').addEventListener('change', async e => {
                      (SERVER.gpu ? `<option value="gpu">Local app: GPU (OpenCL)</option>` : '') + html + `<option value="py">Local app: Python engine (slow)</option>`;
   $('#engine').innerHTML = html;
   $('#enginePill').textContent = SERVER ? (SERVER.cpu ? 'Connected to the local app: fast C engine ready' : 'Connected to the local app') : `Running in your browser · ${th} threads`;
-  const gl = document.querySelector('a[href="/guide.pdf"]');
-  if (gl) { if (location.protocol === 'file:') gl.href = 'GUIDE.pdf'; else if (!SERVER) gl.classList.add('hidden'); }
   renderConds(); updateSpace();
-  showTab(store.get('tab', 'analyze'));
+  showTab('home');
   if (SEED_RE.test(seedIn.value)) analyze();
 })();
 </script>
