@@ -1,0 +1,1172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Balatro Seed Tool</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+:root{
+  color-scheme:dark;
+  --felt:#1d4a40; --felt-deep:#153a32; --panel:#10302a; --panel-2:#183f37; --line:#2c5e53;
+  --ink:#f4f0e3; --muted:#9dbcb2; --dim:#6f948a;
+  --blue:#2e9cf0; --green:#3fbf8f; --red:#f0574a; --purple:#b56be0; --gold:#f2b33d;
+  --tarot:#a782d1; --planet:#2cc0d9; --spectral:#5b84f5; --card:#e9e4d6;
+  --shadow:0 4px 0 rgba(0,0,0,.38);
+  --head:"Inter","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+  --body:"Inter","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--felt);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+body{background:radial-gradient(ellipse at 50% -10%,#24584c 0%,var(--felt) 45%,var(--felt-deep) 100%) fixed}
+button,input,select{font:inherit;color:inherit}
+a{color:var(--gold)}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.hidden{display:none!important}
+
+/* ---------- top bar ---------- */
+.top{display:flex;align-items:center;gap:18px;padding-block:12px;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px));background:var(--panel);border-bottom:3px solid #0b221e;position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--panel)}
+.brand{font-family:var(--head);font-weight:800;font-size:21px;letter-spacing:-.01em;white-space:nowrap}
+.brand b{color:var(--red)} .brand i{font-style:normal;color:var(--blue)}
+nav.tabs{display:flex;gap:6px;flex-wrap:wrap}
+nav.tabs button{background:transparent;border:2px solid transparent;border-radius:8px;padding:6px 14px;cursor:pointer;color:var(--muted);font-weight:700}
+nav.tabs button[aria-selected=true]{color:var(--ink);background:var(--panel-2);border-color:var(--line)}
+.top .spacer{flex:1}
+.engine-pill{font-size:13px;color:var(--muted)}
+
+/* ---------- buttons ---------- */
+.btn{border:0;border-radius:9px;padding:9px 16px;font-weight:700;cursor:pointer;box-shadow:var(--shadow);transform:translateY(0);transition:transform .05s;background:#3b6b60;color:var(--ink)}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.38)}
+.btn.blue{background:var(--blue)} .btn.red{background:var(--red)} .btn.gold{background:var(--gold);color:#2b1d00} .btn.ghost{background:transparent;box-shadow:none;border:2px solid var(--line);color:var(--muted)}
+.btn.small{padding:5px 10px;font-size:13px;border-radius:7px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* ---------- layout ---------- */
+.wrap{display:grid;grid-template-columns:300px 1fr;gap:18px;padding-block:18px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));max-width:1700px;margin:0 auto}
+aside.setup{background:var(--panel);border-radius:12px;padding:14px 16px;align-self:start;position:sticky;top:76px;max-height:calc(100vh - 92px);overflow:auto}
+main{min-width:0}
+@media (max-width:980px){.wrap{grid-template-columns:1fr} aside.setup{position:static;max-height:none} main{order:-1}}
+@media (max-width:700px){.top{flex-wrap:wrap;gap:8px;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))} nav.tabs{order:3;width:100%} nav.tabs button{padding:5px 9px} .engine-pill{display:none} .wrap{padding-block:12px} .seed-input{font-size:26px;width:100%} .tile{width:calc(50% - 3px)} .tile.soul{width:100%}}
+h2{font-family:var(--head);font-weight:700;font-size:20px;margin:0 0 10px}
+h3{font-size:14px;color:var(--muted);margin:16px 0 6px;font-weight:700}
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.field label,.lbl{font-size:13px;color:var(--muted)}
+select,input[type=text],input[type=number],input[type=search]{background:#0b2420;border:2px solid var(--line);border-radius:8px;padding:7px 9px;min-width:0}
+input[type=number]{width:80px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.check{display:flex;gap:8px;align-items:center;font-size:14px;margin:6px 0;cursor:pointer}
+.check input{width:17px;height:17px;accent-color:var(--blue)}
+.hint{font-size:13px;color:var(--dim);margin:4px 0 10px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.chip{display:inline-flex;align-items:center;gap:6px;background:#0b2420;border:1px solid var(--line);border-radius:999px;padding:3px 6px 3px 10px;font-size:13px}
+.chip button{background:none;border:0;color:var(--muted);cursor:pointer;font-size:15px;line-height:1;padding:0 3px}
+.choices li{font-size:13px;margin:3px 0;color:var(--muted)}
+.more-setup{margin:14px 0 4px;border-top:1px solid var(--line);padding-top:8px}
+.more-setup>summary{cursor:pointer;font-size:14px;font-weight:700;color:var(--muted);list-style:none;display:flex;align-items:center;gap:6px;user-select:none}
+.more-setup>summary::before{content:"▸";transition:transform .15s;color:var(--dim)}
+.more-setup[open]>summary::before{transform:rotate(90deg)}
+.more-setup>summary:hover{color:var(--ink)}
+.more-setup .chip{font-size:13px}
+.choices ul{padding-left:18px;margin:4px 0}
+
+/* ---------- seed plate ---------- */
+.plate{display:flex;flex-wrap:wrap;gap:14px;align-items:center;background:var(--panel);border-radius:14px;padding:14px 16px;margin-bottom:16px;box-shadow:var(--shadow)}
+.seed-input{font-family:var(--mono);font-weight:700;font-size:32px;letter-spacing:.1em;text-transform:uppercase;width:8.4em;background:#081c18;border:3px solid var(--line);border-radius:10px;padding:4px 12px;color:var(--gold)}
+.seed-input::placeholder{color:#3e6158}
+.plate .stat{display:flex;flex-direction:column;font-size:13px;color:var(--muted)}
+.plate .stat input{width:64px}
+.err{color:#ffb3ab;background:#4a1d19;border-radius:8px;padding:8px 12px;margin:8px 0}
+
+/* ---------- legendary strip ---------- */
+.legend-strip{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 16px}
+.legend-strip .first{color:var(--muted);font-size:14px;width:100%}
+.leg{border-radius:10px;padding:8px 12px;background:linear-gradient(160deg,#5b2a78,#331747);box-shadow:0 0 0 2px #c98cf0,0 0 18px rgba(201,140,240,.55),var(--shadow)}
+.leg b{font-size:17px;color:#ffe9a8;display:block}
+.leg span{font-size:12px;color:#e3c9f4}
+
+/* ---------- ante grid ---------- */
+.ante{background:rgba(9,30,26,.55);border-radius:14px;padding:12px;margin-bottom:18px;border:1px solid #275347}
+.ante-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:14px;margin:2px 4px 10px}
+.ante-head .num{font-family:var(--head);font-size:26px;font-weight:800;letter-spacing:-.01em}
+.boss{color:#ffd0cb;font-weight:700} .boss::before{content:"Boss ";color:var(--muted);font-weight:400}
+.rounds{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:1250px){.rounds{grid-template-columns:1fr}}
+.shop{background:var(--panel);border-radius:12px;padding:10px 12px;min-width:0}
+.shop.skipped{background:repeating-linear-gradient(135deg,#10302a 0 12px,#132f2a 12px 24px)}
+.shop-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.shop-head .title{font-weight:700}
+.shop-head .sub{font-size:12px;color:var(--dim)}
+.toggle{background:#0b2420;border:2px solid var(--line);border-radius:8px;padding:3px 9px;font-size:12px;cursor:pointer;color:var(--muted);white-space:nowrap}
+.toggle.on{background:var(--red);border-color:var(--red);color:#fff}
+.vouch{display:inline-flex;align-items:center;gap:6px;border:2px dashed #7a6020;background:#2b2412;color:#ffe2a0;border-radius:8px;padding:3px 9px;font-size:13px;cursor:pointer;margin:0 6px 6px 0}
+.vouch.bought{border-style:solid;background:var(--gold);color:#2b1d00;font-weight:700}
+.section-l{font-size:12px;color:var(--dim);margin:8px 0 4px;display:flex;align-items:center;gap:8px;justify-content:space-between}
+.stepper{display:inline-flex;align-items:center;gap:4px}
+.stepper button{width:22px;height:22px;border-radius:6px;border:0;background:#2a564b;color:var(--ink);cursor:pointer;font-weight:700;line-height:1}
+.stepper span{min-width:16px;text-align:center;font-weight:700;color:var(--ink)}
+.stepper input{width:46px;padding:2px 4px;text-align:center;font-weight:700;border-width:1px;border-radius:6px}
+.locate{background:var(--panel);border-radius:12px;padding:12px 14px;margin:0 0 16px;box-shadow:var(--shadow)}
+.locate .row{gap:10px}
+.loc-list{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.loc-list li{display:grid;grid-template-columns:64px 1fr auto;gap:10px;align-items:center;background:#0b2420;border-radius:8px;padding:7px 10px}
+.loc-list .a{font-family:var(--mono);font-size:15px;color:var(--gold)}
+.loc-list .how{font-size:12px;color:var(--muted)}
+@media (max-width:700px){.loc-list li{grid-template-columns:1fr auto}.loc-list .a{grid-column:1/-1}}
+@keyframes flash{0%,100%{box-shadow:0 0 0 0 rgba(242,179,61,0)}30%{box-shadow:0 0 0 4px rgba(242,179,61,.9)}}
+.flash{animation:flash 1.4s ease-out 2}
+@media (prefers-reduced-motion:reduce){.flash{animation:none;outline:3px solid var(--gold)}}
+.cards{display:flex;flex-wrap:wrap;gap:6px}
+.cards.ghosted{opacity:.55}
+.pack{margin-top:8px;border-top:1px solid #234b42;padding-top:6px}
+.pack.closed .cards{display:none}
+.event{margin-top:8px;font-size:13px;color:var(--muted)}
+
+/* ---------- card tiles ---------- */
+.tile{--c:var(--blue);position:relative;width:118px;min-height:56px;background:#0a201c;border-radius:8px;border-top:6px solid var(--c);padding:6px 8px 7px;font-size:14px;line-height:1.25;cursor:default;box-shadow:0 2px 0 rgba(0,0,0,.35)}
+.tile .n{font-weight:600;display:block;word-break:break-word}
+.tile .s{font-size:11px;color:var(--muted);display:block;margin-top:2px}
+.tile.clickable{cursor:pointer}
+.tile.clickable:hover{background:#0e2a25}
+.tile.taken{outline:2px solid var(--gold)}
+.tile.taken::after{content:"✓";position:absolute;right:5px;top:2px;color:var(--gold);font-weight:700}
+.tile.declined{opacity:.5}
+.tile .note{display:block;font-size:11px;color:#ffb3ab;margin-top:3px}
+.tile .took{display:block;font-size:11px;color:var(--gold);margin-top:3px;font-weight:700}
+.result{margin-top:6px;padding:6px 8px;border-radius:8px;background:#0b2420;border-left:3px solid var(--gold);font-size:13px}
+.result.fail{border-left-color:var(--red)}
+.result .cards{margin-top:5px}
+.inv{background:var(--panel);border-radius:12px;padding:12px 14px;margin:0 0 16px;box-shadow:var(--shadow)}
+.inv-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:8px}
+.inv-head h2{margin:0}
+.inv-line{margin-top:8px;padding-top:6px;border-top:1px dashed #2a5a4f;font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.jchip{display:inline-flex;align-items:center;gap:4px;border-radius:6px;padding:1px 7px;background:#0b2420;border-left:4px solid var(--blue);color:var(--ink);font-size:12px}
+.jchip.r2{border-left-color:var(--green)} .jchip.r3{border-left-color:var(--red)} .jchip.r4{border-left-color:var(--purple)}
+.jchip.new{box-shadow:0 0 0 1px var(--gold)}
+.jchip.gone{text-decoration:line-through;opacity:.6}
+.jchip.cons{border-left-color:var(--tarot)}
+.jchip .sell{background:none;border:0;color:var(--muted);cursor:pointer;font-size:12px;padding:0 2px;line-height:1}
+.jchip .sell:hover{color:var(--red)}
+.selltile-wrap{position:relative;display:inline-block}
+.sell-ov{position:absolute;right:5px;bottom:5px;background:#2a564b;border:0;border-radius:6px;color:var(--ink);font-size:11px;font-weight:700;padding:2px 7px;cursor:pointer;opacity:.9}
+.sell-ov:hover{background:var(--red);opacity:1}
+.hold-btn{position:absolute;right:5px;bottom:5px;background:#2a4a6a;border:0;border-radius:6px;color:#fff;font-size:11px;font-weight:700;padding:1px 6px;cursor:pointer;opacity:.92}
+.hold-btn:hover{background:var(--blue)}
+.jchip .use{background:none;border:0;color:#7fd0ff;cursor:pointer;font-size:12px;padding:0 2px;line-height:1;font-weight:700}
+.jchip .use:hover{color:#fff}
+.use-ov{position:absolute;right:5px;bottom:5px;background:#2a4a6a;border:0;border-radius:6px;color:#fff;font-size:11px;font-weight:700;padding:2px 7px;cursor:pointer;opacity:.92}
+.use-ov:hover{background:var(--blue);opacity:1}
+.result.sold{border-left-color:var(--muted)}
+.tile.r1{--c:var(--blue)} .tile.r2{--c:var(--green)} .tile.r3{--c:var(--red)} .tile.r4{--c:var(--purple)}
+.tile.tarot{--c:var(--tarot)} .tile.planet{--c:var(--planet)} .tile.spectral{--c:var(--spectral)} .tile.card{--c:var(--card)}
+.tile.blackhole{--c:#222;background:#05110f;box-shadow:0 0 0 2px #6d7fa6,0 2px 0 rgba(0,0,0,.35)}
+.tile.soul{--c:#ffd96b;width:150px;background:linear-gradient(160deg,#5b2a78,#2b1240);box-shadow:0 0 0 2px #c98cf0,0 0 16px rgba(201,140,240,.6)}
+.tile.soul .n{color:#ffe9a8;font-size:15px}
+.ed{display:inline-block;font-size:10px;font-weight:700;border-radius:4px;padding:0 4px;margin-top:3px;margin-right:3px}
+.ed.foil{background:#c9d6e8;color:#203350} .ed.holo{background:linear-gradient(90deg,#ff9fbf,#9fd2ff);color:#2a1630}
+.ed.polychrome{background:linear-gradient(90deg,#ff7a7a,#ffd36b,#7dff9a,#7ab8ff,#d17aff);color:#1d1d1d} .ed.negative{background:#000;color:#c9c3ff;border:1px solid #6b62c7}
+.seal{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;vertical-align:middle}
+.seal.Red{background:#e2453a}.seal.Blue{background:#3b7be6}.seal.Gold{background:#e8b730}.seal.Purple{background:#9b55d4}
+
+/* ---------- finder ---------- */
+.panel{background:var(--panel);border-radius:12px;padding:14px 16px;margin-bottom:16px}
+.cond{display:grid;grid-template-columns:200px minmax(170px,1.2fr) 150px 80px 1fr 34px;gap:8px;align-items:end;padding:10px;border-radius:10px;background:#0c2722;margin-bottom:8px}
+.cond .more{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.cond .x{background:none;border:0;color:var(--muted);font-size:22px;cursor:pointer}
+@media (max-width:900px){.cond{grid-template-columns:1fr 1fr}}
+.spec{font-family:var(--mono);font-size:12px;color:var(--dim)}
+.presets{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.presets button{background:#0b2420;border:1px solid var(--line);border-radius:999px;padding:5px 12px;cursor:pointer;color:var(--ink);font-size:13px}
+.presets button:hover{border-color:var(--gold)}
+.progress{height:14px;background:#0b2420;border-radius:8px;overflow:hidden;margin:10px 0 6px}
+.progress div{height:100%;width:0;background:linear-gradient(90deg,var(--blue),#7fd0ff);transition:width .3s}
+.stats{display:flex;flex-wrap:wrap;gap:18px;font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.stats b{color:var(--ink);font-size:17px}
+table.results{width:100%;border-collapse:collapse;margin-top:10px}
+table.results th{text-align:left;font-size:12px;color:var(--muted);font-weight:700;padding:6px 8px;border-bottom:2px solid var(--line)}
+table.results td{padding:8px;border-bottom:1px solid #234b42;vertical-align:top;font-size:14px}
+.seedlink{font-family:var(--mono);font-size:19px;color:var(--gold);background:none;border:0;cursor:pointer;padding:0;letter-spacing:.06em}
+.star{background:none;border:0;cursor:pointer;font-size:19px;color:var(--dim)}
+.star.on{color:var(--gold)}
+.empty{color:var(--muted);padding:24px;text-align:center;border:2px dashed var(--line);border-radius:12px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px 16px}
+textarea{width:100%;background:#0b2420;border:2px solid var(--line);border-radius:8px;color:var(--ink);padding:6px 8px;font:inherit;resize:vertical}
+.modal{position:fixed;inset:0;background:rgba(5,20,17,.78);z-index:60;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal>div{background:var(--panel);border-radius:12px;padding:16px;width:min(900px,100%);max-height:90vh;display:flex;flex-direction:column;gap:10px}
+.modal textarea{flex:1;min-height:50vh;font-family:ui-monospace,Consolas,monospace;font-size:12px}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#0b2420;border:2px solid var(--gold);padding:8px 16px;border-radius:10px;z-index:50}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* ---------- ordered shop actions, trays, anchors ---------- */
+.muted{color:var(--dim);font-weight:400}
+.antenav{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px;position:sticky;top:58px;z-index:9;padding:6px 0;background:linear-gradient(var(--felt),rgba(29,74,64,.92))}
+.antenav a{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:3px 12px;font-size:13px;font-weight:600;color:var(--ink);text-decoration:none}
+.antenav a:hover{border-color:var(--gold);color:var(--gold)}
+.ante{scroll-margin-top:110px}
+.offers{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 4px}
+.vouch{font-weight:600}
+.vouch .vstate{font-size:11px;font-weight:600;opacity:.85;border-left:1px solid currentColor;padding-left:6px}
+.linkbtn{background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;font-size:12px}
+.timeline{margin-top:10px;border-top:1px solid #234b42;padding-top:4px}
+.step{position:relative;margin:0 0 8px;padding:7px 9px 8px 9px;background:#0b2420;border-radius:9px;border-left:4px solid #3b6b60}
+.step.reroll{border-left-color:var(--blue)} .step.voucher{border-left-color:var(--gold)} .step.pack{border-left-color:var(--purple)}
+.step.buy{border-left-color:var(--green)} .step.use{border-left-color:var(--spectral)} .step.sell{border-left-color:#c9c3b0}
+.step.auto{border-left-style:dashed;background:transparent;border-top:1px dashed #2a5a4f;border-right:1px dashed #2a5a4f;border-bottom:1px dashed #2a5a4f}
+.step.bad{border-left-color:var(--red);background:#2a1614}
+.step-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:14px}
+.step-h .num{display:inline-grid;place-items:center;min-width:22px;height:22px;border-radius:50%;background:var(--line);font-size:12px;font-weight:700}
+.step-h .ico{font-size:15px}
+.step-h .st{flex:1;min-width:120px}
+.autotag{font-size:11px;color:var(--dim);border:1px dashed var(--dim);border-radius:6px;padding:0 5px;margin-left:4px}
+.ctl{display:inline-flex;gap:3px;margin-left:auto}
+.ctl button{width:26px;height:24px;border-radius:6px;border:0;background:#2a564b;color:var(--ink);cursor:pointer;font-weight:700;line-height:1}
+.ctl button.txt{width:auto;padding:0 8px;font-size:12px;font-weight:600}
+.ctl button:hover:not(:disabled){background:var(--blue)} .ctl button[data-act=del]:hover{background:var(--red)}
+.ctl button:disabled{opacity:.3;cursor:default}
+.step .cards{margin-top:6px}
+.stepnote{font-size:13px;color:#ffb3ab;margin-top:5px} .stepnote.ok{color:var(--muted)}
+.addbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px;padding:8px;border:2px dashed var(--line);border-radius:10px}
+.addbar .lbl{font-weight:600;color:var(--ink);margin-right:2px}
+.tray{margin-top:12px;background:#0a211d;border:1px solid #2a5a4f;border-radius:10px;padding:8px 10px}
+.tray-h{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:13px;margin-bottom:6px;color:var(--muted)}
+.tray-h b{color:var(--ink)} .tray .lost{color:#ffb3ab;font-size:12px}
+.tray-cols{display:grid;grid-template-columns:1fr;gap:8px}
+.tray-t{font-size:12px;color:var(--muted);margin-bottom:4px} .tray-t b{color:var(--ink)}
+.minis{display:flex;flex-wrap:wrap;gap:6px}
+.mini{--c:var(--blue);position:relative;width:104px;min-height:62px;padding:6px 7px 24px;border-radius:8px;background:#0e2d27;border-top:5px solid var(--c);font-size:13px;line-height:1.2;display:flex;flex-direction:column;gap:2px}
+.mini .n{font-weight:600;word-break:break-word} .mini .s{font-size:11px;color:var(--muted)}
+.mini.r1{--c:var(--blue)} .mini.r2{--c:var(--green)} .mini.r3{--c:var(--red)} .mini.r4{--c:var(--purple)}
+.mini.tarot{--c:var(--tarot)} .mini.planet{--c:var(--planet)} .mini.spectral{--c:var(--spectral)}
+.mini.new{box-shadow:0 0 0 2px var(--gold)}
+.mini .newtag{position:absolute;right:4px;top:-1px;font-style:normal;font-size:9px;font-weight:800;background:var(--gold);color:#2b1d00;border-radius:0 0 5px 5px;padding:0 4px}
+.mini.empty{background:transparent;border:2px dashed #2a5a4f;color:var(--dim);justify-content:center;align-items:center;min-height:62px;font-size:12px;padding:4px}
+.mbtn{position:absolute;right:5px;bottom:4px;border:0;border-radius:6px;background:#2a564b;color:var(--ink);font-size:11px;font-weight:700;padding:1px 8px;cursor:pointer}
+.mbtn:hover{background:var(--blue)} .mbtn[data-act=sell]:hover{background:var(--red)}
+.inv .tray{margin-top:0;background:transparent;border:0;padding:0}
+.inv .tray-cols{grid-template-columns:2fr 1fr} .inv .mini{width:128px;min-height:72px;font-size:14px}
+@media (max-width:900px){.inv .tray-cols{grid-template-columns:1fr}}
+.ed.tag{background:#e7e1cf;color:#3a3020}
+.tray .mini.empty{width:78px;min-height:40px}
+.inv .tray .mini.empty{width:128px;min-height:72px}
+.undo-btn{margin-left:4px}
+.shop{display:flex;flex-direction:column}
+.ord{display:inline-grid;place-items:center;min-width:17px;height:17px;border-radius:50%;background:var(--line);font-size:11px;font-weight:700;margin-right:4px}
+.choices li{line-height:1.7}
+
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><b>Balatro</b> <i>Seed</i> Tool</div>
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="analyze" aria-selected="true">Analyze a seed</button>
+    <button role="tab" data-tab="find" aria-selected="false">Find seeds</button>
+    <button role="tab" data-tab="saved" aria-selected="false">Saved seeds</button>
+    <a class="btn ghost small" href="/guide.pdf" target="_blank" rel="noopener">Guide</a>
+  </nav>
+  <div class="spacer"></div>
+  <div class="engine-pill" id="enginePill"></div>
+</header>
+
+<div class="wrap">
+  <!-- ======================= run setup (shared) ======================= -->
+  <aside class="setup" aria-label="Run setup">
+    <h2>Run setup</h2>
+    <div class="field"><label for="deck">Deck</label><select id="deck"></select></div>
+    <div class="field"><label for="stake">Stake</label><select id="stake"></select></div>
+    <div class="field"><label for="unlocked">Unlocked items</label>
+      <select id="unlocked"><option value="all">Everything unlocked</option><option value="fresh">New profile</option></select></div>
+    <label class="check"><input type="checkbox" id="takeSouls" checked> Take and use every Soul</label>
+    <label class="check"><input type="checkbox" id="planetsPlayed"> Planet X, Ceres and Eris can appear</label>
+    <label class="check"><input type="checkbox" id="startUsed"> Starting deck cards already used</label>
+    <div class="field"><label for="mostPlayed">Most played hand (for Telescope)</label><select id="mostPlayed"><option value="">Not set</option></select></div>
+
+    <details class="more-setup">
+      <summary>Advanced setup</summary>
+      <h3>Always take these jokers</h3>
+      <input type="search" id="takeAdd" list="dlJokers" placeholder="Add a joker…">
+      <div class="chips" id="takeChips"></div>
+      <div class="field" style="margin-top:8px"><label for="perkeoN">Perkeo copies per shop</label>
+        <select id="perkeoN"><option value="">1 per Perkeo you own</option><option value="2">2 (Blueprint or Brainstorm copies it)</option><option value="3">3 (both copy it)</option></select></div>
+      <h3>Jokers you already own</h3>
+      <input type="search" id="ownAdd" list="dlJokers" placeholder="Add a joker…">
+      <div class="chips" id="ownChips"></div>
+      <h3>Still locked on your profile</h3>
+      <input type="search" id="lockedAdd" list="dlLockable" placeholder="Add a joker or voucher…">
+      <div class="chips" id="lockedChips"></div>
+    </details>
+
+    <h3>Your choices in this run</h3>
+    <p class="hint">Each shop has an ordered list of actions: reroll, buy a voucher, open a pack, take a card, use a consumable, sell a joker. Order matters, because the game's randomness advances with every step: opening pack A before B, or buying a voucher before or after a reroll, gives different cards. Use the arrows on a step to reorder.</p>
+    <div class="choices" id="choices"></div>
+    <div class="row"><button class="btn small ghost" id="resetChoices">Clear choices</button><button class="btn small ghost" id="resetAll" title="Clears the run setup, choices, always-take list and finder conditions. Saved seeds are kept.">Reset everything</button></div>
+  </aside>
+
+  <main>
+    <!-- ======================= analyze ======================= -->
+    <section id="tab-analyze">
+      <div class="plate">
+        <input class="seed-input" id="seed" maxlength="8" placeholder="SEED" autocomplete="off" spellcheck="false" aria-label="Seed">
+        <button class="btn blue" id="go">Analyze</button>
+        <button class="btn" id="rnd" title="Random seed">Random</button>
+        <button class="btn gold" id="saveSeed">Save</button>
+        <button class="btn small ghost undo-btn" id="undo" disabled title="Undo your last choice (Ctrl+Z)">↶ Undo</button>
+        <div class="stat"><label for="antes">Antes</label><input type="number" id="antes" min="1" max="39" value="3"></div>
+        <div class="stat"><label for="peek">Peek rerolls</label><input type="number" id="peek" min="0" max="20" value="0"></div>
+        <div class="spacer" style="flex:1"></div>
+        <div class="row">
+          <button class="btn small ghost" data-export="md">Markdown</button>
+          <button class="btn small ghost" data-export="text">Text</button>
+          <button class="btn small ghost" data-export="json">JSON</button>
+        </div>
+      </div>
+      <div class="locate">
+        <div class="row">
+          <label for="locJoker" style="font-weight:700">Find a card in this seed</label>
+          <input type="search" id="locJoker" list="dlLocate" placeholder="Joker, tarot, planet, voucher, or a rarity — e.g. Blueprint, The Soul, Any Rare joker" style="min-width:300px;flex:1">
+          <label class="lbl" for="locEd">edition</label>
+          <select id="locEd"><option value="">any</option><option value="foil">Foil</option><option value="holo">Holo</option><option value="polychrome">Polychrome</option><option value="negative">Negative</option></select>
+          <label class="lbl" for="locRr">up to</label><input type="number" id="locRr" min="0" max="50" value="10"><span class="lbl">rerolls/shop</span>
+          <button class="btn small blue" id="locGo">Find</button>
+          <button class="btn small ghost hidden" id="locClear">Clear</button>
+        </div>
+        <div id="locOut"></div>
+      </div>
+      <div id="aErr"></div>
+      <div id="legendStrip" class="legend-strip"></div>
+      <div id="invPanel"></div>
+      <nav class="antenav" id="anteNav" aria-label="Jump to ante"></nav>
+      <div id="antesOut"><div class="empty">Type a seed (1–8 characters) and press Analyze.</div></div>
+    </section>
+
+    <!-- ======================= find ======================= -->
+    <section id="tab-find" class="hidden">
+      <div class="panel">
+        <h2>What should the seed have?</h2>
+        <div class="presets" id="presets"></div>
+        <div id="conds"></div>
+        <button class="btn small" id="addCond">Add condition</button>
+        <p class="hint">All conditions must match. The run setup on the left (deck, stake, unlocks…) applies to the search.</p>
+      </div>
+      <div class="panel">
+        <h2>Search</h2>
+        <div class="grid2">
+          <div class="field"><label for="engine">Engine</label><select id="engine"></select></div>
+          <div class="field"><label>Seed length</label>
+            <div class="row"><input type="number" id="lenMin" min="1" max="8" value="1"> to <input type="number" id="lenMax" min="1" max="8" value="8"></div></div>
+          <div class="field"><label for="order">Order</label><select id="order"><option value="seq">Shortest seeds first</option><option value="rnd">Random sample</option></select></div>
+          <div class="field"><label for="scanCount">Seeds to check</label>
+            <select id="scanCount"><option value="1000000">1 million</option><option value="20000000" selected>20 million</option><option value="100000000">100 million</option><option value="1000000000">1 billion</option><option value="all">All in the length range</option></select></div>
+          <div class="field"><label for="fromSeed">Start from seed (optional)</label><input type="text" id="fromSeed" maxlength="8" placeholder="e.g. AAAA" style="text-transform:uppercase"></div>
+          <div class="field"><label for="maxHits">Stop after</label><select id="maxHits"><option>5</option><option selected>20</option><option>50</option><option>200</option></select></div>
+        </div>
+        <p class="hint" id="spaceHint"></p>
+        <label class="check"><input type="checkbox" id="useChoices"> Also apply my choices from the analyzer (skips, rerolls, purchases, jokers taken)</label>
+        <div class="row">
+          <button class="btn red" id="startSearch">Find seeds</button>
+          <button class="btn ghost" id="stopSearch" disabled>Stop</button>
+        </div>
+        <div id="fErr"></div>
+        <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+        <div class="stats" id="stats"></div>
+      </div>
+      <div class="panel">
+        <div class="row" style="justify-content:space-between"><h2 style="margin:0">Results</h2>
+          <div class="row"><button class="btn small ghost" id="expCsv">CSV</button><button class="btn small ghost" id="expMd">Markdown</button></div></div>
+        <div id="results"><div class="empty">No search yet.</div></div>
+      </div>
+    </section>
+
+    <!-- ======================= saved ======================= -->
+    <section id="tab-saved" class="hidden">
+      <div class="panel">
+        <div class="row" style="justify-content:space-between"><h2 style="margin:0">Saved seeds</h2>
+          <div class="row"><button class="btn small ghost" id="savedExport">Export</button>
+          <label class="btn small ghost" style="cursor:pointer">Import<input type="file" id="savedImport" accept=".json" hidden></label></div></div>
+        <p class="hint">Saved in this browser only. Use Export to keep a copy.</p>
+        <div id="savedList"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<datalist id="dlJokers"></datalist><datalist id="dlLocate"></datalist><datalist id="dlLockable"></datalist>
+<datalist id="dlItems"></datalist>
+
+<script>/*__DATA__*/</script>
+<script>/*__ENGINE__*/</script>
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const store = {
+  get(k, d){ try { const v = localStorage.getItem('bst.' + k); return v ? JSON.parse(v) : d; } catch(e){ return d; } },
+  set(k, v){ try { localStorage.setItem('bst.' + k, JSON.stringify(v)); } catch(e){} }
+};
+let META = null, LAST = null, JOB = null, POLL = null, RESULTS = [], LOCNAMES = [];
+const SEED_RE = /^[1-9A-NP-Z]{1,8}$/;
+const SEED_CHARS = '123456789ABCDEFGHIJKLMNPQRSTUVWXYZ';
+
+/* ---------------- state ---------------- */
+const S = Object.assign({
+  deck:'b_red', stake:1, unlocked:'all', take_souls:true, planets_played:false, start_consumables:'held', most_played:'',
+  own:[], locked:[], take:[], skips:[], skip_packs:[], picks:{}, pickLabels:{}, plan:{}, perkeo_copies:''
+}, store.get('opts', {}));
+/* v7: the choices of a shop are now an ordered list of actions (S.plan[shopId]) instead of loose sets.
+   Keep old reroll counts; the old "buy when offered" / sell / use lists have no position, so they are dropped. */
+if (!(S.v >= 7)) {
+  const plan = {};
+  for (const [sid, n] of Object.entries(S.rerolls || {})) plan[sid] = Array.from({length: +n || 0}, () => ({t:'reroll'}));
+  S.plan = plan; S.take = (S.v >= 6) ? S.take : [];
+  for (const k of ['rerolls','buy_vouchers','sells','sellLabels','uses','useLabels']) delete S[k];
+  S.v = 7; try { localStorage.setItem('bst.opts', JSON.stringify(S)); } catch(e){}
+}
+S.plan = S.plan || {}; S.picks = S.picks || {}; S.pickLabels = S.pickLabels || {}; S.skips = S.skips || []; S.skip_packs = S.skip_packs || [];
+function saveState(){ store.set('opts', S); }
+/* the run setup + choices, in the shape the finder and the engines take (old-style "reroll count" / "buy when offered") */
+function stepsOf(t){ const o = []; for (const [sid, p] of Object.entries(S.plan)) for (const a of p) if (a.t === t) o.push([sid, a]); return o; }
+function opts(){
+  const rerolls = {}; stepsOf('reroll').forEach(([sid]) => rerolls[sid] = (rerolls[sid] || 0) + 1);
+  return {deck:S.deck, stake:S.stake, unlocked:S.unlocked, take_souls:S.take_souls, planets_played:S.planets_played,
+    start_consumables:S.start_consumables, most_played:S.most_played, own:S.own, locked:S.locked, take:S.take,
+    buy_vouchers:[...new Set(stepsOf('voucher').map(([, a]) => a.key))], skips:S.skips, rerolls, skip_packs:S.skip_packs};
+}
+function setupOnly(){ const o = opts(); o.take = []; o.buy_vouchers = []; o.skips = []; o.rerolls = {}; o.skip_packs = []; return o; }
+function clearChoices(){ S.skips = []; S.skip_packs = []; S.picks = {}; S.pickLabels = {}; S.plan = {}; saveState(); renderSetupChips(); }
+/* the analyzer replays S.plan itself, in order, so the loose reroll/voucher fields must stay empty */
+function analyzerOpts(){ return Object.assign(opts(), {interactive: true, plan: S.plan, picks: S.picks, buy_vouchers: [], rerolls: {}, perkeo_copies: S.perkeo_copies ? +S.perkeo_copies : null}); }
+function savedOpts(){ return Object.assign(opts(), {plan: S.plan, picks: S.picks, pickLabels: S.pickLabels, perkeo_copies: S.perkeo_copies}); }
+const API = location.protocol.startsWith('http') ? '' : 'http://127.0.0.1:8777';
+let E = null, SERVER = null;
+async function api(path, body){
+  const r = await fetch(API + path, body ? {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)} : {});
+  const ct = r.headers.get('content-type') || '';
+  const data = ct.includes('json') ? await r.json() : await r.text();
+  if (!r.ok) throw new Error((data && data.error) || ('HTTP ' + r.status));
+  return data;
+}
+function toast(msg){ const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 1800); }
+function nameOf(key){ if (!META) return key; for (const l of ['jokers','tarots','planets','spectrals','vouchers','tags','bosses','packs','enhancements']) { const f = META[l].find(x => x.key === key); if (f) return f.name; } return key; }
+const IS_ARTIFACT = /*__ARTIFACT__*/false;
+function showText(name, text){
+  const m = document.createElement('div'); m.className = 'modal';
+  m.innerHTML = `<div role="dialog" aria-label="${esc(name)}"><div class="row" style="justify-content:space-between"><b>${esc(name)}</b><div class="row"><button class="btn small gold" id="mCopy">Copy</button><button class="btn small ghost" id="mClose">Close</button></div></div><textarea id="mText" readonly></textarea><span class="hint">Copy this text and paste it into a file or message.</span></div>`;
+  document.body.appendChild(m); m.querySelector('#mText').value = text;
+  m.querySelector('#mClose').onclick = () => m.remove();
+  m.addEventListener('click', e => { if (e.target === m) m.remove(); });
+  m.querySelector('#mCopy').onclick = () => { const ta = m.querySelector('#mText'); navigator.clipboard.writeText(text).then(() => toast('Copied'), () => { ta.focus(); ta.select(); toast('Press Ctrl+C to copy'); }); };
+}
+function download(name, text, type){
+  if (IS_ARTIFACT) { showText(name, text); return; } const b = new Blob([text], {type: type || 'text/plain'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); }
+
+/* ---------------- tabs ---------------- */
+document.querySelectorAll('nav.tabs button').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
+function showTab(t){
+  document.querySelectorAll('nav.tabs button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === t)));
+  for (const id of ['analyze','find','saved']) $('#tab-' + id).classList.toggle('hidden', id !== t);
+  if (t === 'saved') renderSaved();
+  store.set('tab', t);
+}
+
+/* ---------------- setup panel ---------------- */
+function fillSetup(){
+  $('#deck').innerHTML = META.decks.map(d => `<option value="${d.key}">${esc(d.name)}</option>`).join('');
+  $('#stake').innerHTML = META.stakes.map((s, i) => `<option value="${i+1}">${esc(s)} Stake</option>`).join('');
+  $('#mostPlayed').innerHTML = '<option value="">Not set</option>' + META.hands.map(h => `<option>${esc(h)}</option>`).join('');
+  $('#dlJokers').innerHTML = META.jokers.map(j => `<option value="${esc(j.name)}">`).join('');
+  LOCNAMES = ['Any Common joker', 'Any Uncommon joker', 'Any Rare joker', 'Any Legendary joker']
+    .concat(META.jokers.map(j => j.name), META.tarots.map(x => x.name), META.planets.map(x => x.name), META.spectrals.map(x => x.name), META.vouchers.map(x => x.name));
+  $('#dlLocate').innerHTML = LOCNAMES.map(n => `<option value="${esc(n)}">`).join('');
+  $('#dlLockable').innerHTML = META.jokers.concat(META.vouchers).map(j => `<option value="${esc(j.name)}">`).join('');
+  $('#deck').value = S.deck; $('#stake').value = S.stake; $('#unlocked').value = S.unlocked;
+  $('#takeSouls').checked = S.take_souls; $('#planetsPlayed').checked = S.planets_played;
+  $('#startUsed').checked = S.start_consumables === 'used'; $('#mostPlayed').value = S.most_played || '';
+  const on = (id, f) => $(id).addEventListener('change', () => { f(); saveState(); rerun(); });
+  on('#deck', () => S.deck = $('#deck').value);
+  on('#stake', () => S.stake = +$('#stake').value);
+  on('#unlocked', () => S.unlocked = $('#unlocked').value);
+  on('#takeSouls', () => S.take_souls = $('#takeSouls').checked);
+  on('#planetsPlayed', () => S.planets_played = $('#planetsPlayed').checked);
+  on('#startUsed', () => S.start_consumables = $('#startUsed').checked ? 'used' : 'held');
+  on('#mostPlayed', () => S.most_played = $('#mostPlayed').value);
+  const adder = (inp, list, pool) => $(inp).addEventListener('change', () => {
+    const v = $(inp).value.trim().toLowerCase(); const it = pool().find(x => x.name.toLowerCase() === v);
+    if (it && !S[list].includes(it.key)) { S[list].push(it.key); saveState(); renderSetupChips(); rerun(); }
+    $(inp).value = '';
+  });
+  adder('#ownAdd', 'own', () => META.jokers);
+  adder('#lockedAdd', 'locked', () => META.jokers.concat(META.vouchers));
+  $('#resetChoices').addEventListener('click', () => { clearChoices(); rerun(); });
+  let armed = null;
+  $('#resetAll').addEventListener('click', () => {
+    const b = $('#resetAll');
+    if (!armed) { b.textContent = 'Click again to reset'; b.classList.add('red'); armed = setTimeout(() => { armed = null; b.textContent = 'Reset everything'; b.classList.remove('red'); }, 4000); return; }
+    clearTimeout(armed); armed = null;
+    try { for (const k of Object.keys(localStorage)) if (k.startsWith('bst.') && k !== 'bst.saved') localStorage.removeItem(k); } catch(e){}
+    location.reload();
+  });
+  adder('#takeAdd', 'take', () => META.jokers);
+  $('#perkeoN').value = S.perkeo_copies || '';
+  $('#perkeoN').addEventListener('change', () => { S.perkeo_copies = $('#perkeoN').value; saveState(); rerun(); });
+  renderSetupChips();
+}
+const KINDNAME = {s:'Small', b:'Big', x:'Boss'};
+const shopLabel = sid => `ante ${sid.slice(0, -1)}, after ${KINDNAME[sid.slice(-1)]}`;
+function actionLabel(a){
+  if (a.t === 'reroll') return 'Reroll';
+  if (a.t === 'voucher') return 'Buy ' + esc(nameOf(a.key));
+  if (a.t === 'pack') return 'Open pack ' + a.n;
+  if (a.t === 'buy') return (a.hold ? 'Hold ' : 'Take ') + esc(S.pickLabels[a.id] || a.id);
+  if (a.t === 'use') return 'Use ' + esc(a.name || a.id);
+  if (a.t === 'sell') return 'Sell ' + esc(a.name || a.id);
+  return a.t;
+}
+function renderSetupChips(){
+  const chip = (list, k) => `<span class="chip">${esc(nameOf(k))}<button aria-label="Remove ${esc(nameOf(k))}" data-rm="${list}|${k}">×</button></span>`;
+  $('#ownChips').innerHTML = S.own.map(k => chip('own', k)).join('');
+  $('#lockedChips').innerHTML = S.locked.map(k => chip('locked', k)).join('');
+  $('#takeChips').innerHTML = S.take.map(k => chip('take', k)).join('') || '<span class="hint" style="margin:0">None. Jokers you add here are taken every time they appear.</span>';
+  const md = document.querySelector('.more-setup'); if (md && !md.open && (S.take.length || S.own.length || S.locked.length || S.perkeo_copies)) md.open = true;
+  const x = (list, k) => `<button class="star" style="font-size:14px" aria-label="Remove" data-rm="${list}|${k}">×</button>`;
+  const L = [];
+  S.skips.forEach(k => L.push(`Skip the ${KINDNAME[k.slice(-1)]} Blind of ante ${k.slice(0, -1)} ${x('skips', k)}`));
+  Object.keys(S.plan).sort((a, b) => parseInt(a) - parseInt(b) || 'sbx'.indexOf(a.slice(-1)) - 'sbx'.indexOf(b.slice(-1))).forEach(sid =>
+    L.push(`<b>${shopLabel(sid)}:</b> ${S.plan[sid].map((a, i) => `<span class="ord">${i + 1}</span>${actionLabel(a)}`).join(' → ')} ${x('plan', sid)}`));
+  S.take.forEach(k => L.push(`Always take ${esc(nameOf(k))} ${x('take', k)}`));
+  Object.entries(S.picks).forEach(([id, v]) => L.push(`${v === 'hold' ? 'Hold' : v ? 'Take/use' : 'Leave'} ${esc(S.pickLabels[id] || id)} ${x('picks', id)}`));
+  S.skip_packs.forEach(p => L.push((p.startsWith('tagpack:') ? `Don't open ${esc(nameOf(p.slice(8)))} packs` : `Leave pack ${p.split('.')[1]} closed (${shopLabel(p.split('.')[0])})`) + ' ' + x('skip_packs', p)));
+  $('#choices').innerHTML = L.length ? '<ul>' + L.map(z => `<li>${z}</li>`).join('') + '</ul>' : '<p class="hint">Nothing yet. Use the buttons under each shop.</p>';
+  document.querySelectorAll('[data-rm]').forEach(b => b.addEventListener('click', () => {
+    const i = b.dataset.rm.indexOf('|'), list = b.dataset.rm.slice(0, i), k = b.dataset.rm.slice(i + 1);
+    mut(() => {
+      if (list === 'plan') delete S.plan[k];
+      else if (list === 'picks') { delete S.picks[k]; delete S.pickLabels[k]; }
+      else S[list] = S[list].filter(z => z !== k);
+    });
+  }));
+}
+/* every change to the choices goes through mut(): remembers the previous state for Undo, saves, re-renders */
+const HIST = [];
+function snapState(){ HIST.push(JSON.stringify({plan: S.plan, picks: S.picks, pickLabels: S.pickLabels, skips: S.skips, skip_packs: S.skip_packs})); if (HIST.length > 80) HIST.shift(); updUndo(); }
+function updUndo(){ const b = $('#undo'); if (b) b.disabled = !HIST.length; }
+function mut(f){ snapState(); f(); saveState(); renderSetupChips(); rerun(); }
+function undo(){ const h = HIST.pop(); updUndo(); if (!h) return; Object.assign(S, JSON.parse(h)); saveState(); renderSetupChips(); rerun(); toast('Undone'); }
+/* plan editing */
+const planOf = sid => S.plan[sid] || (S.plan[sid] = []);
+const isShopCardId = id => /^\d+[sbx]\.s\d+\.\d+$/.test(id);
+const sidOfId = id => id.slice(0, id.indexOf('.'));
+function dropEmpty(sid){ if (S.plan[sid] && !S.plan[sid].length) delete S.plan[sid]; }
+/* taking a shop card is a step: it goes right before the reroll that would throw that set away */
+function insertBuy(id, hold, label){
+  const sid = sidOfId(id), set = +/^\d+[sbx]\.s(\d+)\./.exec(id)[1], p = planOf(sid);
+  let at = p.length, seen = 0;
+  for (let i = 0; i < p.length; i++) if (p[i].t === 'reroll') { if (seen === set) { at = i; break; } seen++; }
+  p.splice(at, 0, {t: 'buy', id, hold: !!hold});
+  S.pickLabels[id] = label;
+}
+function removeBuy(id){ const sid = sidOfId(id), p = S.plan[sid] || [], i = p.findIndex(a => a.t === 'buy' && a.id === id); if (i >= 0) { p.splice(i, 1); dropEmpty(sid); delete S.pickLabels[id]; return true; } return false; }
+
+/* ---------------- analyzer ---------------- */
+const seedIn = $('#seed');
+seedIn.value = store.get('seed', 'ALEEB');
+$('#antes').value = store.get('antes', 3);
+seedIn.addEventListener('input', () => { seedIn.value = seedIn.value.toUpperCase().replace(/[^1-9A-NP-Z]/g, ''); });
+seedIn.addEventListener('keydown', e => { if (e.key === 'Enter') analyze(); });
+$('#go').addEventListener('click', () => analyze());
+$('#rnd').addEventListener('click', () => { let s = ''; for (let i = 0; i < 8; i++) s += SEED_CHARS[Math.floor(Math.random() * 34)]; seedIn.value = s; analyze(); });
+$('#antes').addEventListener('change', () => analyze());
+$('#peek').addEventListener('change', () => analyze());
+$('#saveSeed').addEventListener('click', () => { if (LAST) addSaved(LAST.seed, LAST.legendaries.map(l => l.name).join(', ')); });
+document.querySelectorAll('[data-export]').forEach(b => b.addEventListener('click', async () => {
+  if (!LAST) return;
+  const f = b.dataset.export;
+  const t = f === 'json' ? JSON.stringify(LAST, null, 1) : E.render(LAST, f === 'md');
+  download(`${LAST.seed}.${({md:'md', text:'txt', json:'json'})[f]}`, t);
+}));
+$('#undo').addEventListener('click', undo);
+document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)) { e.preventDefault(); undo(); } });
+let pending = null, keepChoicesOnce = false;
+function rerun(){ if (LAST) { clearTimeout(pending); pending = setTimeout(() => analyze(true), 120); } }
+
+async function analyze(keepScroll){
+  const seed = seedIn.value.trim().toUpperCase();
+  $('#aErr').innerHTML = '';
+  if (!SEED_RE.test(seed)) { $('#aErr').innerHTML = `<div class="err">A seed is 1 to 8 characters from 1–9, A–N and P–Z. The letter O and the digit 0 are not used.</div>`; return; }
+  if (S.lastSeed && S.lastSeed !== seed && !keepChoicesOnce) clearChoices();
+  if (S.lastSeed && S.lastSeed !== seed && LOC) LOC = Object.assign({}, LOC);
+  keepChoicesOnce = false; S.lastSeed = seed; saveState();
+  store.set('seed', seed); store.set('antes', +$('#antes').value);
+  const y = window.scrollY;
+  try {
+    LAST = E.analyze(seed, Math.max(1, Math.min(39, +$('#antes').value || 3)), Math.max(0, Math.min(20, +$('#peek').value || 0)), analyzerOpts());
+    renderAnalysis(LAST);
+    runLocate();
+    if (keepScroll === true) window.scrollTo(0, y);
+  } catch(e){ $('#aErr').innerHTML = `<div class="err">${esc(e.message)}</div>`; }
+}
+
+function tile(c, ctx){
+  if (!c) return `<div class="tile"><span class="n">(empty)</span></div>`;
+  let cls = 'tile ', sub = '';
+  if (c.kind === 'joker') { cls += 'r' + c.rarity; sub = ['', 'Common', 'Uncommon', 'Rare', 'Legendary'][c.rarity] + ' joker'; }
+  else if (c.kind === 'card') { cls += 'card'; sub = c.enh || 'Playing card'; }
+  else if (c.kind === 'soul') { cls += 'soul'; }
+  else if (c.kind === 'blackhole') { cls += 'blackhole'; sub = 'Spectral'; }
+  else { cls += c.kind; sub = c.kind[0].toUpperCase() + c.kind.slice(1); }
+  const clickable = !!c.id && ctx !== 'preview' && ctx !== 'static';
+  if (clickable) cls += ' clickable';
+  if ((c.taken || c.used) && c.kind !== 'soul') cls += ' taken';
+  if (c.id && S.picks[c.id] === false) cls += ' declined';
+  let badges = '';
+  if (c.edition) badges += `<span class="ed ${c.edition}">${c.edition[0].toUpperCase() + c.edition.slice(1)}</span>`;
+  if (c.sticker) badges += `<span class="ed tag">${c.sticker}</span>`;
+  if (c.rental) badges += `<span class="ed tag">rental</span>`;
+  const seal = c.seal ? `<span class="seal ${c.seal}" title="${c.seal} Seal"></span>` : '';
+  const attrs = clickable ? `role="button" tabindex="0" data-act="pick" data-id="${esc(c.id)}" data-taken="${c.taken || c.used ? 1 : 0}" data-name="${esc(c.kind === 'soul' ? 'The Soul' : c.name)}"` : '';
+  const note = c.note ? `<span class="note">${esc(c.note)}</span>` : '';
+  if (c.kind === 'soul') {
+    const L = c.legendary;
+    const t = clickable ? (L ? 'Taken: click to leave it' : 'Click to take The Soul') : 'The Soul';
+    return `<div class="${cls}" ${attrs} title="${esc(t)}"><span class="s" style="color:#e3c9f4">The Soul</span><span class="n">${L ? 'Taken: ' + esc(L.name) : 'Not taken'}</span>${L && L.edition ? `<span class="ed ${L.edition}">${L.edition}</span>` : ''}${L ? `<span class="took">${c.auto === 'soul' ? 'Taken automatically (Take every Soul is on)' : 'Now one of your jokers'}</span>` : ''}${note}</div>`;
+  }
+  const verb = c.kind === 'joker' ? 'take' : (c.kind === 'card' ? 'add to your deck' : 'use');
+  const title = clickable ? ((c.taken || c.used) ? (c.auto === 'take' ? 'Taken because it is on your Always take list. Click to leave this one.' : 'Taken: click to undo') : `Click to ${verb} this card`) : '';
+  const took = c.held ? '<span class="took" style="color:#7fd0ff">Held — use it later</span>' : ((c.taken || c.used) ? `<span class="took">${c.auto === 'take' ? 'Taken: always-take list' : c.kind === 'joker' ? 'Taken' : c.kind === 'card' ? 'Added to deck' : 'Used'}</span>` : '');
+  const isCons = c.kind === 'tarot' || c.kind === 'planet' || c.kind === 'spectral';
+  const holdBtn = (clickable && isCons && !c.held && !c.used) ? `<button class="hold-btn" data-act="hold" data-id="${esc(c.id)}" data-name="${esc(c.name)}" title="Keep ${esc(c.name)} in a consumable slot and use it later">hold</button>` : '';
+  return `<div class="${cls}" ${attrs} title="${esc(title)}"><span class="n">${seal}${esc(c.name)}</span><span class="s">${esc(sub)}${c.from_tag ? ' · ' + esc(c.from_tag) : ''}</span>${badges}${took}${note}${holdBtn}</div>`;
+}
+
+function results(cards){
+  let h = '';
+  for (const c of cards) {
+    if (!c || !c.result || !(c.taken || c.used || c.result.fail)) continue;
+    const r = c.result;
+    h += `<div class="result ${r.fail ? 'fail' : ''}"><b>${esc(c.name)}</b>: ${esc(r.text)}`;
+    if (r.created.length) h += `<div class="cards">${r.created.map(x => tile(x)).join('')}</div><span class="hint" style="margin:0">Click a created card to use it now; otherwise you keep it.</span>`;
+    if (r.jokers.length) h += `<div class="cards">${r.jokers.map(x => tile(Object.assign({}, x, {taken: false}), 'static')).join('')}</div>`;
+    h += results(r.created) + `</div>`;
+  }
+  return h;
+}
+
+/* ---------- jokers and consumables: slot trays ---------- */
+const RARN = ['', 'Common', 'Uncommon', 'Rare', 'Legendary'];
+function diffNew(list, prev){
+  const before = new Map(); (prev || []).forEach(p => { const k = p.key + '|' + (p.edition || ''); before.set(k, (before.get(k) || 0) + 1); });
+  return list.map(x => { const k = x.key + '|' + (x.edition || ''); const isNew = !!prev && !(before.get(k) > 0); if (!isNew && prev) before.set(k, before.get(k) - 1); return isNew; });
+}
+function miniJoker(j, sid, isNew){
+  const sell = sid && j.id ? `<button class="mbtn" data-act="sell" data-id="${esc(j.id)}" data-sid="${sid}" data-name="${esc(j.name)}" title="Sell ${esc(j.name)} at this point: frees the slot, and it can show up again later">Sell</button>` : '';
+  return `<div class="mini r${j.rarity || 1}${isNew ? ' new' : ''}"><span class="n">${esc(j.name)}</span><span class="s">${RARN[j.rarity || 1]}${j.edition ? ' · ' + esc(j.edition) : ''}</span>${isNew ? '<i class="newtag">NEW</i>' : ''}${sell}</div>`;
+}
+function miniCons(c, sid, isNew){
+  const k = (c.type || 'Tarot').toLowerCase();
+  const use = sid && c.id ? `<button class="mbtn" data-act="use" data-id="${esc(c.id)}" data-sid="${sid}" data-name="${esc(c.name)}" title="Use ${esc(c.name)} at this point">Use</button>` : '';
+  return `<div class="mini ${k}${isNew ? ' new' : ''}"><span class="n">${esc(c.name)}</span><span class="s">${esc(c.type)}${c.edition ? ' · ' + esc(c.edition) : ''}</span>${isNew ? '<i class="newtag">NEW</i>' : ''}${use}</div>`;
+}
+function tray(inv, prev, sid, title){
+  if (!inv) return '';
+  const jn = diffNew(inv.jokers, prev && prev.jokers), cn = diffNew(inv.cons, prev && prev.cons);
+  const js = inv.jokers.map((j, i) => miniJoker(j, sid, jn[i])).join('') + Array.from({length: Math.max(0, inv.slots - inv.jokers.length)}, () => '<div class="mini empty">empty slot</div>').join('');
+  const cs = inv.cons.map((c, i) => miniCons(c, sid, cn[i])).join('') + Array.from({length: Math.max(0, inv.cslots - inv.cons.length)}, () => '<div class="mini empty">empty slot</div>').join('');
+  const lost = prev ? prev.jokers.filter(p => !inv.jokers.some(j => j.key === p.key)).concat(prev.cons.filter(p => !inv.cons.some(j => j.key === p.key))) : [];
+  return `<div class="tray"><div class="tray-h"><b>${esc(title || 'After this shop')}</b>${lost.length ? `<span class="lost">gone: ${lost.map(x => esc(x.name)).join(', ')}</span>` : ''}</div>
+    <div class="tray-cols"><div class="tray-col"><div class="tray-t">Jokers <b>${inv.jokers.length}/${inv.slots}</b></div><div class="minis">${js}</div></div>
+    <div class="tray-col"><div class="tray-t">Consumables <b>${inv.cons.length}/${inv.cslots}</b></div><div class="minis">${cs}</div></div></div></div>`;
+}
+function renderInventory(d){
+  const inv = d.inventory;
+  if (!inv) { $('#invPanel').innerHTML = ''; return; }
+  let lastSid = null;
+  for (const A of d.antes) for (const R of A.rounds) if (R.shop) lastSid = R.shop.id;
+  $('#invPanel').innerHTML = `<div class="inv"><div class="inv-head"><h2>Your run now</h2><span class="lbl">After ante ${d.antes.length}. Sell and Use act at the end of the last shop (${lastSid ? shopLabel(lastSid) : ''}); use the tray under an earlier shop to act there.</span></div>${tray(inv, null, lastSid, 'Jokers and consumables')}</div>`;
+}
+
+/* ---------- one shop: offers, ordered actions, tray ---------- */
+const STEP_ICON = {reroll: '↻', voucher: '🎟', pack: '📦', buy: '＋', use: '✦', sell: '$'};
+function stepBody(st){
+  const note = st.ok === false ? `<div class="stepnote">${esc(st.note || 'Could not be done at this point.')}</div>` : '';
+  if (st.t === 'reroll') return `<div class="cards">${st.cards.map(c => tile(c)).join('')}</div>`;
+  if (st.t === 'voucher') return note + (st.extra && st.extra.length ? `<div class="stepnote ok">Adds a shop slot:</div><div class="cards">${st.extra.map(c => tile(c)).join('')}</div>` : '');
+  if (st.t === 'pack') return note + (st.cards ? `<div class="cards">${st.cards.map(c => tile(c)).join('')}</div>${results(st.cards)}` : '');
+  if (st.t === 'buy') return note + (st.card && st.card.result ? results([st.card]) : '');
+  if (st.t === 'use') return note + (st.result ? results([{name: st.name, used: true, result: st.result}]) : '');
+  if (st.t === 'sell') { const x = st.entry; return note + (x ? `<div class="result sold">${x.text ? esc(x.text) + (x.assumed ? ' <span class="ed tag">reconstructed — verify in game</span>' : '') : 'Frees a joker slot; it can appear again later.'}${x.jokers && x.jokers.length ? `<div class="cards">${x.jokers.map(jk => tile(Object.assign({kind: 'joker'}, jk), 'static')).join('')}</div>` : ''}</div>` : ''); }
+  return '';
+}
+function stepTitle(st){
+  if (st.t === 'reroll') return `Reroll ${st.n}`;
+  if (st.t === 'voucher') return `Buy voucher <b>${esc(st.name)}</b>`;
+  if (st.t === 'pack') return `Open <b>${esc(st.pack ? st.pack.name : 'pack ' + st.idx)}</b> <span class="muted">(pack ${st.idx}${st.pack ? `, pick ${st.pack.choose} of ${st.pack.size}` : ''})</span>${st.auto ? ' <span class="autotag">opens last, automatically</span>' : ''}`;
+  if (st.t === 'buy') return `${st.hold ? 'Hold' : (st.card && st.card.kind === 'joker' ? 'Take' : (st.card && st.card.kind === 'card' ? 'Add to deck' : 'Use'))} <b>${esc(st.card ? st.card.name : st.id)}</b> <span class="muted">from the shop</span>`;
+  if (st.t === 'use') return `Use <b>${esc(st.name || st.id)}</b>`;
+  if (st.t === 'sell') return `Sell <b>${esc(st.name || st.id)}</b>`;
+  return st.t;
+}
+function renderShop(A, R, prevInv){
+  const sh = R.shop, sid = sh.id, bid = `${A.ante}${R.blind}`;
+  const nExp = (S.plan[sid] || []).length;
+  const skipBtn = R.blind !== 'x' ? `<button class="toggle" data-act="skip" data-id="${bid}" title="Skip this blind to get its tag (removes this shop)">Skip blind</button>` : '';
+  let h = `<div class="shop"><div class="shop-head"><div><div class="title">Shop after ${({s:'Small Blind', b:'Big Blind', x:'Boss Blind'})[R.blind]}${R.blind === 'x' ? ` <span class="muted">(${esc(A.boss.name)})</span>` : ''}</div>
+    <div class="sub">${R.blind === 'x' ? `Rolled with ante ${sh.rng_ante} randomness` : `Ante ${sh.rng_ante} randomness`}</div></div>${skipBtn}</div>`;
+  h += `<div class="offers">`;
+  for (const v of sh.vouchers) {
+    const si = sh.steps.findIndex(s => s.t === 'voucher' && s.key === v.key && s.ok);
+    h += `<button class="vouch ${si >= 0 ? 'bought' : ''}" data-act="voucher" data-key="${v.key}" data-sid="${sid}" title="${si >= 0 ? 'Bought at step ' + (si + 1) + ': click to remove that step' : 'Buy this voucher now: it is added as the next step'}">🎟 ${esc(v.name)} <span class="vstate">${si >= 0 ? 'bought · step ' + (si + 1) : 'buy'}</span></button>`;
+  }
+  h += `</div>`;
+  h += `<div class="section-l"><span>Shop cards</span><span class="muted">click a card to take it</span></div><div class="cards">${sh.slots[0].map(c => tile(c)).join('')}</div>`;
+  h += `<div class="timeline"><div class="section-l"><span><b>Your actions, in order</b></span>${nExp ? `<button class="linkbtn" data-act="clearshop" data-sid="${sid}">clear</button>` : ''}</div>`;
+  if (!sh.steps.length) h += `<p class="hint" style="margin:0 0 6px">Nothing yet. Reroll, buy the voucher or open a pack with the buttons below. The order you choose is the order that is simulated.</p>`;
+  sh.steps.forEach((st, i) => {
+    const exp = i < nExp;
+    const ctl = exp ? `<span class="ctl"><button data-act="up" data-sid="${sid}" data-i="${i}" ${i === 0 ? 'disabled' : ''} aria-label="Move earlier" title="Do this earlier">↑</button><button data-act="down" data-sid="${sid}" data-i="${i}" ${i === nExp - 1 ? 'disabled' : ''} aria-label="Move later" title="Do this later">↓</button><button data-act="del" data-sid="${sid}" data-i="${i}" aria-label="Remove step" title="Remove this step">✕</button></span>`
+      : (st.t === 'pack' ? `<span class="ctl"><button class="txt" data-act="packclose" data-sid="${sid}" data-n="${st.idx}" title="Do not open this pack">leave closed</button></span>` : '');
+    h += `<div class="step ${st.t} ${st.ok === false ? 'bad' : ''} ${exp ? '' : 'auto'}"><div class="step-h"><span class="num">${exp ? i + 1 : '·'}</span><span class="ico">${STEP_ICON[st.t] || ''}</span><span class="st">${stepTitle(st)}</span>${ctl}</div>${stepBody(st)}</div>`;
+  });
+  for (const P of sh.packs) if (!P.opened) h += `<div class="step pack auto closed"><div class="step-h"><span class="num">·</span><span class="ico">📦</span><span class="st"><b>${esc(P.name)}</b> <span class="muted">(pack ${P.id.split('.')[1]}) left closed</span></span><span class="ctl"><button class="txt" data-act="packclose" data-sid="${sid}" data-n="${P.id.split('.')[1]}">open it</button></span></div></div>`;
+  const doneV = new Set(sh.steps.filter(s => s.t === 'voucher' && s.ok).map(s => s.key));
+  h += `<div class="addbar"><span class="lbl">Do next:</span><button class="btn small" data-act="reroll" data-sid="${sid}">↻ Reroll</button>`;
+  for (const v of sh.vouchers) if (!doneV.has(v.key)) h += `<button class="btn small" data-act="voucher" data-key="${v.key}" data-sid="${sid}">🎟 Buy ${esc(v.name)}</button>`;
+  for (const P of sh.packs) {
+    const n = P.id.split('.')[1];
+    const explicit = sh.steps.some((s, i) => i < nExp && s.t === 'pack' && s.idx === +n);
+    if (!explicit) h += `<button class="btn small" data-act="packopen" data-sid="${sid}" data-n="${n}">📦 Open ${esc(P.name)}</button>`;
+  }
+  h += `</div></div>`;
+  sh.preview.forEach((pair, i) => { h += `<div class="section-l">If you reroll ${i + 1} more time${i ? 's' : ''}</div><div class="cards ghosted">${pair.map(c => tile(c, 'preview')).join('')}</div>`; });
+  if (sh.perkeo && sh.perkeo.length) h += `<div class="result"><b>Perkeo</b> (end of shop) makes Negative copies:<div class="cards">${sh.perkeo.map(c => tile(c)).join('')}</div>${results(sh.perkeo)}</div>`;
+  h += events(R.events) + tray(R.inv, prevInv, sid, 'After this shop') + `</div>`;
+  return h;
+}
+function renderAnalysis(d){
+  renderInventory(d);
+  let prevInv = null;
+  const legs = d.legendaries;
+  $('#legendStrip').innerHTML = `<span class="first">Seed ${esc(d.seed)} · ${esc(d.deck)} · ${esc(d.stake)} Stake. The first Soul you use gives <b>${esc(d.first_legendary)}</b>.</span>` +
+    legs.map(l => `<div class="leg"><b>${esc(l.name)}${l.edition ? ' (' + esc(l.edition) + ')' : ''}</b><span>Ante ${l.ante}, ${esc(l.where)}</span></div>`).join('') +
+    (d.warnings.length ? `<div class="err" style="width:100%">${d.warnings.map(esc).join('<br>')}</div>` : '');
+  $('#anteNav').innerHTML = d.antes.map(A => `<a href="#ante${A.ante}">Ante ${A.ante}</a>`).join('');
+  let html = '';
+  for (const A of d.antes) {
+    html += `<section class="ante" id="ante${A.ante}" aria-label="Ante ${A.ante}"><div class="ante-head"><span class="num">Ante ${A.ante}</span><span class="boss">${esc(A.boss.name)}</span>
+      <span class="lbl">Skip tags: Small → ${esc(A.tags[0].name)}, Big → ${esc(A.tags[1].name)}</span></div><div class="rounds">`;
+    for (const R of A.rounds) {
+      if (R.skipped) {
+        const bid = `${A.ante}${R.blind}`;
+        html += `<div class="shop skipped"><div class="shop-head"><div><div class="title">${({s:'Small Blind', b:'Big Blind'})[R.blind]} skipped</div><div class="sub">You get the ${esc(R.tag.name)}. No shop.</div></div><button class="toggle on" data-act="skip" data-id="${bid}">Skipped</button></div>${events(R.events)}${tray(R.inv, prevInv, null, 'After skipping')}</div>`;
+      } else html += renderShop(A, R, prevInv);
+      prevInv = R.inv || prevInv;
+    }
+    html += `</div></section>`;
+  }
+  $('#antesOut').innerHTML = html;
+  wireAnalysis();
+}
+/* ---------- find a joker in this seed ---------- */
+let LOC = null;     // {key, name, rr}
+function runLocate(){
+  if (!LOC || !LAST) { $('#locOut').innerHTML = ''; $('#locClear').classList.add('hidden'); return; }
+  $('#locClear').classList.remove('hidden');
+  const antes = Math.max(1, Math.min(39, +$('#antes').value || 3));
+  let list;
+  try { list = E.locate(LAST.seed, analyzerOpts(), LOC.key, antes, LOC.rr, LOC.ed || null); }
+  catch(e){ $('#locOut').innerHTML = `<div class="err">${esc(e.message)}</div>`; return; }
+  const howTxt = a => ({direct: a.taken ? 'You get it' : 'Shows up without doing anything',
+    'your rerolls': 'With the rerolls you set', reroll: `Reroll this shop ${a.rerolls} time${a.rerolls > 1 ? 's' : ''}`,
+    use: (a.rerolls ? `Reroll ${a.rerolls}×, then u` : 'U') + 'se the card to create it', skip: 'Skip the blind for its tag'})[a.how];
+  if (!list.length) {
+    $('#locOut').innerHTML = `<p class="hint" style="margin:10px 0 0">${esc(LOC.name)}${LOC.ed ? ' (' + LOC.ed + ')' : ''} doesn't show up in antes 1–${antes} with up to ${LOC.rr} rerolls per shop, your current choices, or by skipping a blind. Try more antes, more rerolls, or a different edition.</p>`;
+    return;
+  }
+  $('#locOut').innerHTML = `<p class="hint" style="margin:8px 0 0">${list.length} way${list.length > 1 ? 's' : ''} to see ${esc(LOC.name)} in antes 1–${antes}. Each one assumes you don't do the others. Your current choices are included.</p><ul class="loc-list">` +
+    list.map((a, i) => `<li><span class="a">Ante ${a.ante}</span><span>${(LOC.key.startsWith('rarity:') || (a.name && a.name !== LOC.name)) ? `<b>${esc(a.name)}</b>: ` : ''}<span class="n">${esc(a.where)}</span>${a.edition ? ` <span class="ed ${a.edition}">${esc(a.edition)}</span>` : ''}<br><span class="how">${esc(howTxt(a))}</span></span>
+      <button class="btn small" data-goto="${i}">Show me</button></li>`).join('') + '</ul>';
+  document.querySelectorAll('[data-goto]').forEach(b => b.addEventListener('click', () => gotoLoc(list[+b.dataset.goto])));
+}
+function gotoLoc(a){
+  snapState();
+  let changed = false;
+  if ((a.how === 'reroll' || a.how === 'use') && a.rerolls && a.sid) { for (let i = 0; i < a.rerolls; i++) planOf(a.sid).push({t: 'reroll'}); changed = true; }
+  if (a.how === 'use' && a.pick) {
+    if (isShopCardId(a.pick)) { if (!(S.plan[sidOfId(a.pick)] || []).some(x => x.t === 'buy' && x.id === a.pick)) { insertBuy(a.pick, false, `the card that creates ${a.name} (${placeOf(a.pick)})`); changed = true; } }
+    else if (S.picks[a.pick] !== true) { S.picks[a.pick] = true; S.pickLabels[a.pick] = `the card that creates ${a.name} (${placeOf(a.pick)})`; changed = true; }
+  }
+  if (a.how === 'skip' && !S.skips.includes(a.skip)) { S.skips = S.skips.concat([a.skip]); changed = true; }
+  if (+$('#antes').value < a.ante) { $('#antes').value = a.ante; changed = true; }
+  const jump = () => {
+    const el = (a.id ? document.querySelector(`[data-id="${CSS.escape(a.id)}"]`) : null)
+      || (a.key && a.key.startsWith('v_') ? document.querySelector(`[data-key="${CSS.escape(a.key)}"]`) : null);
+    if (!el) { toast('Applied. Scroll to ante ' + a.ante + ' to see it.'); return; }
+    el.scrollIntoView({block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'});
+    el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+  };
+  if (changed) { saveState(); renderSetupChips(); analyze(true); setTimeout(jump, 80); } else { HIST.pop(); updUndo(); jump(); }
+}
+function locPool(){ return [].concat(META.jokers, META.tarots, META.planets, META.spectrals, META.vouchers); }
+$('#locGo').addEventListener('click', () => {
+  const v = $('#locJoker').value.trim().toLowerCase();
+  const rm = /^(any )?(common|uncommon|rare|legendary)( jokers?)?$/.exec(v);
+  let j;
+  if (rm) { const r = ['common', 'uncommon', 'rare', 'legendary'].indexOf(rm[2]) + 1; j = {key: 'rarity:' + r, name: 'Any ' + rm[2][0].toUpperCase() + rm[2].slice(1) + ' joker'}; }
+  else { const pool = locPool(); j = pool.find(x => x.name.toLowerCase() === v) || pool.find(x => v && x.name.toLowerCase().startsWith(v)); }
+  if (!j) { $('#locOut').innerHTML = `<div class="err">Type a card's name (for example Blueprint, The Soul or Telescope) or a rarity (for example Any Rare joker).</div>`; return; }
+  $('#locJoker').value = j.name;
+  LOC = {key: j.key, name: j.name, ed: $('#locEd').value || '', rr: Math.max(0, Math.min(50, Math.floor(+$('#locRr').value) || 0))};
+  $('#locRr').value = LOC.rr;
+  if (!LAST) analyze(); else runLocate();
+});
+$('#locEd').addEventListener('change', () => { if (LOC) { LOC.ed = $('#locEd').value || ''; runLocate(); } });
+$('#locJoker').addEventListener('keydown', e => { if (e.key === 'Enter') $('#locGo').click(); });
+$('#locClear').addEventListener('click', () => { LOC = null; $('#locJoker').value = ''; runLocate(); });
+function events(evs){
+  let h = '';
+  for (const e of evs) {
+    if (e.event === 'tag_pack') {
+      const key = 'tagpack:' + e.tag.key, closed = !e.opened;
+      h += `<div class="pack ${closed ? 'closed' : ''}"><div class="section-l"><span>${esc(e.tag.name)} opens <b style="color:var(--ink)">${esc(e.pack.name)}</b></span>
+        <button class="toggle ${closed ? 'on' : ''}" data-act="tagpack" data-id="${key}">${closed ? 'Left closed' : 'Opened'}</button></div><div class="cards">${(e.cards || []).map(c => tile(c)).join('')}</div>${results(e.cards || [])}</div>`;
+    } else if (e.event === 'double') h += `<div class="event">Double Tag copies the ${esc(e.tag.name)}.</div>`;
+    else if (e.boss) h += `<div class="event">Boss Tag rerolls the boss into ${esc(e.boss.name)}.</div>`;
+    else if (e.cards) h += `<div class="event">${esc(e.tag.name)} gives:</div><div class="cards">${e.cards.map(c => tile(c, 'static')).join('')}</div>`;
+    else h += `<div class="event">${esc(e.tag.name)} used.</div>`;
+  }
+  return h;
+}
+function placeOf(id){
+  const m = /^(\d+)([sbx])\.(.*)$/.exec(id);
+  if (!m) return id.startsWith('start') ? 'starting card' : id;
+  const where = `ante ${m[1]}, ` + ({s: 'Small', b: 'Big', x: 'Boss'})[m[2]] + ' shop';
+  let rest = m[3], what;
+  const base = /^(s(\d+)\.(\d+)|p(\d+)\.(\d+)|t(\d+)\.(\d+)|perkeo(\d+))/.exec(rest);
+  if (!base) return where;
+  if (base[2] !== undefined) what = +base[2] ? `shop card after reroll ${base[2]}` : 'shop card';
+  else if (base[4] !== undefined) what = `pack ${base[4]}`;
+  else if (base[6] !== undefined) what = 'tag pack';
+  else what = 'Perkeo copy';
+  return `${where}, ${what}${rest.length > base[0].length ? ', created card' : ''}`;
+}
+function wireAnalysis(){
+  const root = document.querySelector('main');
+  if (root._wired) return; root._wired = true;
+  const run = e => {
+    const el = e.target.closest('[data-act]'); if (!el || el.disabled || !root.contains(el)) return;
+    if (el.closest('#locOut,#tab-find,#tab-saved')) return;
+    const a = el.dataset.act, id = el.dataset.id, sid = el.dataset.sid;
+    mut(() => {
+      if (a === 'pick') {
+        if (isShopCardId(id)) {
+          if (removeBuy(id)) return;
+          if (S.picks[id] !== undefined) { delete S.picks[id]; delete S.pickLabels[id]; return; }
+          if (el.dataset.taken === '1') { S.picks[id] = false; S.pickLabels[id] = `${el.dataset.name} (${placeOf(id)})`; return; }
+          insertBuy(id, false, `${el.dataset.name} (${placeOf(id)})`);
+        } else if (S.picks[id] !== undefined) { delete S.picks[id]; delete S.pickLabels[id]; }
+        else { S.picks[id] = el.dataset.taken !== '1'; S.pickLabels[id] = `${el.dataset.name} (${placeOf(id)})`; }
+      } else if (a === 'hold') {
+        if (isShopCardId(id)) { if (!removeBuy(id)) insertBuy(id, true, `${el.dataset.name} (${placeOf(id)})`); }
+        else if (S.picks[id] === 'hold') { delete S.picks[id]; delete S.pickLabels[id]; }
+        else { S.picks[id] = 'hold'; S.pickLabels[id] = `${el.dataset.name} (${placeOf(id)})`; }
+      } else if (a === 'reroll') planOf(sid).push({t: 'reroll'});
+      else if (a === 'voucher') {
+        const p = planOf(sid), i = p.findIndex(z => z.t === 'voucher' && z.key === el.dataset.key);
+        if (i >= 0) p.splice(i, 1); else p.push({t: 'voucher', key: el.dataset.key});
+        dropEmpty(sid);
+      } else if (a === 'packopen') { S.skip_packs = S.skip_packs.filter(z => z !== `${sid}.${el.dataset.n}`); planOf(sid).push({t: 'pack', n: +el.dataset.n}); }
+      else if (a === 'packclose') { const k = `${sid}.${el.dataset.n}`; S.skip_packs = S.skip_packs.includes(k) ? S.skip_packs.filter(z => z !== k) : S.skip_packs.concat([k]); }
+      else if (a === 'up' || a === 'down') { const p = planOf(sid), i = +el.dataset.i, j = i + (a === 'up' ? -1 : 1); if (p[j]) [p[i], p[j]] = [p[j], p[i]]; }
+      else if (a === 'del') { const p = planOf(sid), x = p[+el.dataset.i]; if (x && x.t === 'buy') delete S.pickLabels[x.id]; p.splice(+el.dataset.i, 1); dropEmpty(sid); }
+      else if (a === 'clearshop') { (S.plan[sid] || []).forEach(x => { if (x.t === 'buy') delete S.pickLabels[x.id]; }); delete S.plan[sid]; }
+      else if (a === 'sell' || a === 'use') planOf(sid).push({t: a, id, name: el.dataset.name});
+      else if (a === 'skip') { S.skips = S.skips.includes(id) ? S.skips.filter(z => z !== id) : S.skips.concat([id]); if (S.skips.includes(id)) delete S.plan[id]; }
+      else if (a === 'tagpack') S.skip_packs = S.skip_packs.includes(id) ? S.skip_packs.filter(z => z !== id) : S.skip_packs.concat([id]);
+    });
+  };
+  root.addEventListener('click', e => {
+    if (e.target.closest('.hold-btn')) e.stopPropagation();
+    run(e);
+  });
+  root.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('.tile[data-act]')) { e.preventDefault(); run(e); } });
+}
+
+/* ---------------- finder ---------------- */
+const LOCS = [
+  ['legend', 'Legendary from a Soul'], ['joker', 'Joker anywhere'], ['shop', 'Shop card'], ['pack', 'Card in a pack'],
+  ['voucher', 'Voucher'], ['tag', 'Skip tag'], ['boss', 'Boss blind'], ['packtype', 'Booster pack in shop'], ['card', 'Playing card']];
+function itemsFor(loc){
+  const m = META;
+  return ({legend: m.jokers.filter(j => j.rarity === 4), joker: m.jokers, shop: m.jokers.concat(m.tarots, m.planets, m.spectrals.filter(s => s.key !== 'c_soul' && s.key !== 'c_black_hole')),
+    pack: m.tarots.concat(m.planets, m.spectrals, m.jokers), voucher: m.vouchers, tag: m.tags, boss: m.bosses, packtype: m.packs,
+    card: m.cards.map(n => ({key: n, name: n}))})[loc];
+}
+let CONDS = store.get('conds', [{loc:'legend', item:'any', lo:1, hi:1, count:2}]);
+function saveConds(){ store.set('conds', CONDS); }
+function specOf(c){
+  const it = c.item === 'any' || !c.item ? 'any' : c.item;
+  let s = `${c.loc}:${it}:${c.lo}-${c.hi}`;
+  if (+c.count > 1) s += `:count=${c.count}`;
+  if (c.rarity && ['joker', 'shop', 'pack'].includes(c.loc) && (!c.item || c.item === 'any')) s += `:rarity=${c.rarity}`;
+  if (c.edition) s += `:edition=${c.edition}`;
+  if (c.seal && c.loc === 'card') s += `:seal=${c.seal}`;
+  if (c.enh && c.loc === 'card') s += `:enh=${c.enh}`;
+  if (c.shop && c.shop.length && c.shop.length < 4) s += `:shop=${c.shop.join('+')}`;
+  if (+c.rerolls > 0 && (c.loc === 'shop' || c.loc === 'joker')) s += `:rerolls=${c.rerolls}`;
+  return s;
+}
+function renderConds(){
+  const box = $('#conds');
+  box.innerHTML = CONDS.map((c, i) => {
+    const items = itemsFor(c.loc);
+    const itemName = c.item === 'any' ? 'Any' : (items.find(x => x.key === c.item) || {}).name || '';
+    const edOk = ['shop', 'pack', 'joker', 'legend', 'card'].includes(c.loc);
+    return `<div class="cond" data-i="${i}">
+      <div class="field"><label>Where</label><select data-f="loc">${LOCS.map(([k, n]) => `<option value="${k}" ${k === c.loc ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
+      <div class="field"><label>What</label><input type="search" data-f="item" list="dl-${i}" value="${esc(itemName)}" placeholder="Any"><datalist id="dl-${i}"><option value="Any">${items.map(x => `<option value="${esc(x.name)}">`).join('')}</datalist></div>
+      <div class="field"><label>Antes</label><div class="row" style="flex-wrap:nowrap"><input type="number" data-f="lo" min="1" max="39" value="${c.lo}" style="width:58px" aria-label="From ante">–<input type="number" data-f="hi" min="1" max="39" value="${c.hi}" style="width:58px" aria-label="To ante"></div></div>
+      <div class="field"><label>At least</label><input type="number" data-f="count" min="1" max="20" value="${c.count || 1}" style="width:60px"></div>
+      <div class="spec">${esc(specOf(c))}</div>
+      <button class="x" data-del="${i}" aria-label="Remove condition">×</button>
+      <div class="more">
+        ${['joker', 'shop', 'pack'].includes(c.loc) && (!c.item || c.item === 'any') ? `<label class="lbl">Rarity <select data-f="rarity"><option value="">any</option>${['common', 'uncommon', 'rare', 'legendary'].map(r => `<option value="${r}" ${c.rarity === r ? 'selected' : ''}>${r[0].toUpperCase() + r.slice(1)}</option>`).join('')}</select></label>` : ''}
+        ${edOk ? `<label class="lbl">Edition <select data-f="edition"><option value="">any</option>${['foil', 'holo', 'polychrome', 'negative'].map(e => `<option ${c.edition === e ? 'selected' : ''}>${e}</option>`).join('')}</select></label>` : ''}
+        ${c.loc === 'card' ? `<label class="lbl">Seal <select data-f="seal"><option value="">any</option>${['red', 'blue', 'gold', 'purple'].map(e => `<option ${c.seal === e ? 'selected' : ''}>${e}</option>`).join('')}</select></label>
+          <label class="lbl">Enhancement <select data-f="enh"><option value="">any</option>${META.enhancements.map(e => `<option value="${e.key}" ${c.enh === e.key ? 'selected' : ''}>${esc(e.name)}</option>`).join('')}</select></label>` : ''}
+        ${['shop', 'pack', 'joker', 'legend', 'card', 'voucher', 'packtype'].includes(c.loc) ? `<span class="lbl">Which shops</span>${[['s', 'after Small'], ['b', 'after Big'], ['x', 'after Boss'], ['tag', 'tag packs']].map(([k, n]) => `<label class="check" style="margin:0"><input type="checkbox" data-shop="${k}" ${!c.shop || c.shop.includes(k) ? 'checked' : ''}>${n}</label>`).join('')}` : ''}
+        ${c.loc === 'shop' || c.loc === 'joker' ? `<label class="lbl">within <input type="number" data-f="rerolls" min="0" max="50" value="${c.rerolls || 0}" style="width:60px"> rerolls</label>` : ''}
+      </div></div>`;
+  }).join('') || '<div class="empty">No conditions. Add one or pick a preset.</div>';
+  box.querySelectorAll('.cond').forEach(row => {
+    const i = +row.dataset.i, c = CONDS[i];
+    row.querySelectorAll('[data-f]').forEach(inp => inp.addEventListener('change', () => {
+      const f = inp.dataset.f;
+      if (f === 'item') { const v = inp.value.trim().toLowerCase(); const it = itemsFor(c.loc).find(x => x.name.toLowerCase() === v); c.item = it ? it.key : 'any'; }
+      else if (f === 'loc') { c.loc = inp.value; c.item = 'any'; c.edition = ''; c.rarity = ''; }
+      else if (['lo', 'hi', 'count', 'rerolls'].includes(f)) c[f] = Math.max(f === 'rerolls' ? 0 : 1, Math.min(f === 'count' ? 20 : f === 'rerolls' ? 50 : 39, +inp.value || 0));
+      else c[f] = inp.value;
+      if (c.hi < c.lo) c.hi = c.lo;
+      saveConds(); renderConds();
+    }));
+    row.querySelectorAll('[data-shop]').forEach(cb => cb.addEventListener('change', () => {
+      c.shop = [...row.querySelectorAll('[data-shop]')].filter(x => x.checked).map(x => x.dataset.shop);
+      saveConds(); renderConds();
+    }));
+  });
+  box.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', () => { CONDS.splice(+b.dataset.del, 1); saveConds(); renderConds(); }));
+}
+$('#addCond').addEventListener('click', () => { CONDS.push({loc:'joker', item:'any', lo:1, hi:2, count:1}); saveConds(); renderConds(); });
+const PRESETS = [
+  ['2 legendaries in ante 1', [{loc:'legend', item:'any', lo:1, hi:1, count:2}]],
+  ['3 legendaries in ante 1', [{loc:'legend', item:'any', lo:1, hi:1, count:3}]],
+  ['Perkeo by ante 2', [{loc:'legend', item:'j_perkeo', lo:1, hi:2, count:1}]],
+  ['2 Rare jokers by ante 2', [{loc:'joker', item:'any', lo:1, hi:2, count:2, rarity:'rare'}]],
+  ['Rare joker in the first shop', [{loc:'shop', item:'any', lo:1, hi:1, count:1, rarity:'rare', shop:['s']}]],
+  ['Negative Rare joker', [{loc:'joker', item:'any', lo:1, hi:3, count:1, rarity:'rare', edition:'negative'}]],
+  ['Negative legendary', [{loc:'legend', item:'any', lo:1, hi:3, count:1, edition:'negative'}]],
+  ['Blueprint + Brainstorm', [{loc:'joker', item:'j_blueprint', lo:1, hi:3, count:1}, {loc:'joker', item:'j_brainstorm', lo:1, hi:3, count:1}]],
+  ['Negative joker in ante 1', [{loc:'joker', item:'any', lo:1, hi:1, count:1, edition:'negative'}]],
+  ['Charm Tag + Soul in ante 1', [{loc:'tag', item:'tag_charm', lo:1, hi:1, count:1}, {loc:'pack', item:'c_soul', lo:1, hi:1, count:1}]],
+  ['Telescope + Mega Celestial', [{loc:'voucher', item:'v_telescope', lo:1, hi:1, count:1}, {loc:'packtype', item:'p_celestial_mega_1', lo:1, hi:2, count:1}]],
+];
+$('#presets').innerHTML = PRESETS.map((p, i) => `<button data-p="${i}">${esc(p[0])}</button>`).join('');
+document.querySelectorAll('[data-p]').forEach(b => b.addEventListener('click', () => { CONDS = JSON.parse(JSON.stringify(PRESETS[+b.dataset.p][1])); saveConds(); renderConds(); }));
+
+function spaceSize(){ let n = 0; for (let L = +$('#lenMin').value; L <= +$('#lenMax').value; L++) n += 34 ** L; return n; }
+function updateSpace(){
+  let a = Math.max(1, Math.min(8, +$('#lenMin').value || 1)), b = Math.max(1, Math.min(8, +$('#lenMax').value || 8));
+  if (a > b) [a, b] = [b, a];
+  $('#lenMin').value = a; $('#lenMax').value = b;
+  $('#spaceHint').textContent = `${spaceSize().toLocaleString()} seeds have ${a === b ? a : a + ' to ' + b} characters.` + (b <= 5 ? ' Small enough to check all of them.' : '');
+}
+['#lenMin', '#lenMax'].forEach(s => $(s).addEventListener('change', updateSpace));
+
+$('#startSearch').addEventListener('click', startSearch);
+$('#stopSearch').addEventListener('click', async () => { if (LOCAL) LOCAL.stop(); else if (JOB) await api('/api/stop', {id: JOB}); });
+async function startSearch(){
+  $('#fErr').innerHTML = '';
+  if (!CONDS.length) { $('#fErr').innerHTML = '<div class="err">Add at least one condition.</div>'; return; }
+  const from = $('#fromSeed').value.trim().toUpperCase();
+  if (from && !SEED_RE.test(from)) { $('#fErr').innerHTML = '<div class="err">"Start from" must be a valid seed (1–8 characters, no O or 0).</div>'; return; }
+  const cnt = $('#scanCount').value === 'all' ? spaceSize() : +$('#scanCount').value;
+  const body = {crits: CONDS.map(specOf), opts: $('#useChoices').checked ? opts() : setupOnly(), engine: $('#engine').value, lengths: `${$('#lenMin').value}-${$('#lenMax').value}`,
+    count: cnt, hits: +$('#maxHits').value, from: from || null, random: $('#order').value === 'rnd' ? Math.floor(Math.random() * 1e9) : null};
+  if (body.engine === 'browser') {
+    try { body.crits.forEach(E.parseCrit); } catch(e){ $('#fErr').innerHTML = `<div class="err">${esc(e.message)}</div>`; return; }
+    startLocal(body); return;
+  }
+  try {
+    const r = await api('/api/search', body);
+    JOB = r.id; RESULTS = [];
+    $('#startSearch').disabled = true; $('#stopSearch').disabled = false;
+    renderResults();
+    clearInterval(POLL); POLL = setInterval(poll, 500);
+  } catch(e){ $('#fErr').innerHTML = `<div class="err">${esc(e.message)}</div>`; }
+}
+function fmtTime(s){ if (!isFinite(s)) return '–'; if (s < 60) return s.toFixed(0) + ' s'; if (s < 3600) return (s / 60).toFixed(1) + ' min'; if (s < 86400) return (s / 3600).toFixed(1) + ' h'; return (s / 86400).toFixed(1) + ' days'; }
+function showStats(st){
+  const frac = st.total ? Math.min(1, st.scanned / st.total) : 0;
+  $('#bar').style.width = (frac * 100).toFixed(1) + '%';
+  const eta = st.rate > 0 ? (st.total - st.scanned) / st.rate : Infinity;
+  $('#stats').innerHTML = `<span>Checked <b>${st.scanned.toLocaleString()}</b> of ${st.total.toLocaleString()}</span><span>Speed <b>${Math.round(st.rate).toLocaleString()}</b>/s</span>
+    <span>Found <b>${st.results.length}</b></span><span>Time <b>${fmtTime(st.elapsed)}</b></span>${st.state === 'running' ? `<span>Time left <b>${fmtTime(eta)}</b></span>` : ''}<span>Engine: ${esc(st.engine || '…')}</span>`;
+}
+
+/* ---------- search inside the browser: a pool of Web Workers running the same engine ---------- */
+let LOCAL = null;
+function workerMain(){
+  let W = null, crits = null, wopts = null;
+  self.onmessage = ev => {
+    const m = ev.data;
+    if (m.type === 'init') { W = BalatroEngine(m.data); crits = m.specs.map(W.parseCrit); wopts = m.opts; return; }
+    const hits = [];
+    for (let k = 0; k < m.n; k++) {
+      const idx = m.random ? Math.floor(Math.random() * m.space) : m.start + k;
+      const s = W.idx2seed(idx, m.a, m.b);
+      const w = W.check(s, wopts, crits);
+      if (w) hits.push({seed: s, idx, desc: crits.map((c, i) => W.describe(w[i], c))});
+    }
+    self.postMessage({n: m.n, hits});
+  };
+}
+function startLocal(body){
+  const [a, b] = body.lengths.split('-').map(Number);
+  const space = E.spaceSize(a, b);
+  let base = 0;
+  if (body.from) { try { base = E.seed2idx(body.from, a, b); } catch(e){ $('#fErr').innerHTML = `<div class="err">${esc(e.message)}</div>`; return; } }
+  const random = body.random !== null;
+  const total = random ? body.count : Math.max(0, Math.min(body.count, space - base));
+  const nThreads = Math.max(1, Math.min(32, navigator.hardwareConcurrency || 4));
+  const st = {state: 'running', scanned: 0, total, results: [], rate: 0, elapsed: 0, engine: `this browser, ${nThreads} threads`};
+  const t0 = performance.now();
+  let next = 0, chunk = 400, busy = 0, workers = [], seen = new Set(), stopped = false, mainThread = false;
+  const finish = state => {
+    if (st.state !== 'running') return;
+    st.state = state; workers.forEach(w => w.terminate()); clearInterval(timer);
+    st.elapsed = (performance.now() - t0) / 1000; st.rate = st.scanned / Math.max(st.elapsed, 1e-9);
+    showStats(st); RESULTS = st.results; renderResults(); LOCAL = null;
+    $('#startSearch').disabled = false; $('#stopSearch').disabled = true;
+    toast(state === 'stopped' ? 'Search stopped' : `Search finished: ${st.results.length} found`);
+  };
+  const take = () => {
+    if (stopped || st.results.length >= body.hits || next >= total) return null;
+    const n = Math.min(chunk, total - next); const m = {n, start: base + next, random, space, a, b}; next += n; return m;
+  };
+  const got = (msg, dt) => {
+    st.scanned += msg.n;
+    for (const h of msg.hits) if (!seen.has(h.seed) && st.results.length < body.hits) { seen.add(h.seed); st.results.push(h); }
+    if (!random) st.results.sort((x, y) => x.idx - y.idx);
+    if (dt < 250) chunk = Math.min(chunk * 2, 50000); else if (dt > 1200) chunk = Math.max(100, chunk >> 1);
+  };
+  const timer = setInterval(() => { st.elapsed = (performance.now() - t0) / 1000; st.rate = st.scanned / Math.max(st.elapsed, 1e-9); showStats(st); RESULTS = st.results; renderResults(); }, 400);
+  LOCAL = {stop(){ stopped = true; finish('stopped'); }};
+  $('#startSearch').disabled = true; $('#stopSearch').disabled = false; RESULTS = []; renderResults();
+  let url = null;
+  try {
+    url = URL.createObjectURL(new Blob([`const BalatroEngine = ${BalatroEngine.toString()};\n(${workerMain.toString()})();`], {type: 'text/javascript'}));
+    for (let i = 0; i < nThreads; i++) workers.push(new Worker(url));
+  } catch(e) { workers = []; mainThread = true; }
+  if (mainThread) {                 // no Web Workers here (some sandboxes): search on the page itself, in small steps
+    st.engine = 'this browser, 1 thread';
+    const crits = body.crits.map(E.parseCrit);
+    const step = () => {
+      const m = take(); if (!m) { if (st.state === 'running') finish(stopped ? 'stopped' : 'done'); return; }
+      const t = performance.now(), hits = [];
+      for (let k = 0; k < m.n; k++) { const idx = random ? Math.floor(Math.random() * space) : m.start + k; const s = E.idx2seed(idx, a, b); const w = E.check(s, body.opts, crits); if (w) hits.push({seed: s, idx, desc: crits.map((c, i) => E.describe(w[i], c))}); }
+      got({n: m.n, hits}, performance.now() - t); setTimeout(step, 0);
+    };
+    chunk = 200; step(); return;
+  }
+  workers.forEach(w => {
+    w.postMessage({type: 'init', data: DATA, specs: body.crits, opts: body.opts});
+    let t = 0;
+    const send = () => { const m = take(); if (!m) { busy--; if (busy <= 0) finish(stopped ? 'stopped' : 'done'); return; } t = performance.now(); w.postMessage(m); };
+    w.onmessage = ev => { got(ev.data, performance.now() - t); send(); };
+    w.onerror = ev => { $('#fErr').innerHTML = `<div class="err">Search worker failed: ${esc(ev.message || 'unknown error')}</div>`; stopped = true; finish('stopped'); };
+    busy++; send();
+  });
+  if (url) setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+
+async function poll(){
+  if (!JOB) return;
+  let st; try { st = await api('/api/job?id=' + JOB); } catch(e){ return; }
+  showStats(st);
+  RESULTS = st.results; renderResults();
+  if (st.state !== 'running' && st.state !== 'starting') {
+    clearInterval(POLL); JOB = null;
+    $('#startSearch').disabled = false; $('#stopSearch').disabled = true;
+    if (st.state === 'error') $('#fErr').innerHTML = `<div class="err">${esc(st.message)}</div>`;
+    else toast(st.state === 'stopped' ? 'Search stopped' : `Search finished: ${st.results.length} found`);
+  }
+}
+function renderResults(){
+  if (!RESULTS.length) { $('#results').innerHTML = `<div class="empty">${JOB ? 'Searching…' : 'No seeds found yet. Check more seeds or loosen a condition.'}</div>`; return; }
+  const saved = new Set(store.get('saved', []).map(s => s.seed));
+  const specs = CONDS.map(specOf);
+  $('#results').innerHTML = `<table class="results"><thead><tr><th>Seed</th>${specs.map(s => `<th>${esc(s)}</th>`).join('')}<th></th></tr></thead><tbody>` +
+    RESULTS.map(r => `<tr><td><button class="seedlink" data-open="${r.seed}" title="Open in the analyzer">${r.seed}</button></td>${r.desc.map(d => `<td>${esc(d)}</td>`).join('')}
+      <td><button class="star ${saved.has(r.seed) ? 'on' : ''}" data-star="${r.seed}" aria-label="Save ${r.seed}">★</button></td></tr>`).join('') + '</tbody></table>';
+  document.querySelectorAll('[data-open]').forEach(b => b.addEventListener('click', () => openSeed(b.dataset.open)));
+  document.querySelectorAll('[data-star]').forEach(b => b.addEventListener('click', () => {
+    const r = RESULTS.find(x => x.seed === b.dataset.star); addSaved(r.seed, r.desc.join(' | ')); renderResults();
+  }));
+}
+function openSeed(seed){ keepChoicesOnce = $('#useChoices').checked; seedIn.value = seed; showTab('analyze'); const hi = Math.max(3, ...CONDS.map(c => c.hi)); $('#antes').value = hi; analyze(); window.scrollTo(0, 0); }
+$('#expCsv').addEventListener('click', () => { const specs = CONDS.map(specOf); download('seeds.csv', 'seed,' + specs.map(s => `"${s}"`).join(',') + '\n' + RESULTS.map(r => r.seed + ',' + r.desc.map(d => `"${d.replace(/"/g, "'")}"`).join(',')).join('\n'), 'text/csv'); });
+$('#expMd').addEventListener('click', () => { const specs = CONDS.map(specOf); download('seeds.md', `# Seeds found\n\n| Seed | ${specs.join(' | ')} |\n|${'---|'.repeat(specs.length + 1)}\n` + RESULTS.map(r => `| **${r.seed}** | ${r.desc.join(' | ')} |`).join('\n') + '\n'); });
+
+/* ---------------- saved ---------------- */
+function addSaved(seed, note){
+  const L = store.get('saved', []);
+  if (L.some(s => s.seed === seed)) { toast(`${seed} is already saved`); return; }
+  L.unshift({seed, note: note || '', date: new Date().toISOString().slice(0, 10), opts: savedOpts()});
+  store.set('saved', L); toast(`Saved ${seed}`);
+}
+function renderSaved(){
+  const L = store.get('saved', []);
+  if (!L.length) { $('#savedList').innerHTML = '<div class="empty">Nothing saved yet. Use Save on the analyzer or the star next to a search result.</div>'; return; }
+  $('#savedList').innerHTML = `<table class="results"><thead><tr><th>Seed</th><th>Notes</th><th>Saved</th><th></th></tr></thead><tbody>` +
+    L.map((s, i) => `<tr><td><button class="seedlink" data-sopen="${i}">${esc(s.seed)}</button></td><td><textarea rows="2" data-note="${i}">${esc(s.note)}</textarea></td><td>${esc(s.date)}</td>
+      <td><button class="btn small ghost" data-sdel="${i}">Remove</button></td></tr>`).join('') + '</tbody></table>';
+  document.querySelectorAll('[data-sopen]').forEach(b => b.addEventListener('click', () => {
+    const s = L[+b.dataset.sopen]; if (s.opts) { clearChoices(); Object.assign(S, s.opts); S.plan = S.plan || {}; S.picks = S.picks || {}; S.pickLabels = S.pickLabels || {}; saveState(); fillSetupValues(); renderSetupChips(); keepChoicesOnce = true; }
+    seedIn.value = s.seed; showTab('analyze'); analyze();
+  }));
+  document.querySelectorAll('[data-note]').forEach(t => t.addEventListener('change', () => { L[+t.dataset.note].note = t.value; store.set('saved', L); }));
+  document.querySelectorAll('[data-sdel]').forEach(b => b.addEventListener('click', () => { L.splice(+b.dataset.sdel, 1); store.set('saved', L); renderSaved(); }));
+}
+function fillSetupValues(){ $('#deck').value = S.deck; $('#stake').value = S.stake; $('#unlocked').value = S.unlocked; $('#takeSouls').checked = S.take_souls; $('#planetsPlayed').checked = S.planets_played; $('#startUsed').checked = S.start_consumables === 'used'; $('#mostPlayed').value = S.most_played || ''; }
+$('#savedExport').addEventListener('click', () => download('balatro-saved-seeds.json', JSON.stringify(store.get('saved', []), null, 1), 'application/json'));
+$('#savedImport').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try { const add = JSON.parse(await f.text()); const L = store.get('saved', []); const have = new Set(L.map(s => s.seed));
+        add.forEach(s => { if (s && s.seed && SEED_RE.test(s.seed) && !have.has(s.seed)) L.push(s); }); store.set('saved', L); renderSaved(); toast('Imported'); }
+  catch(err){ toast('That file is not a saved-seeds export'); }
+});
+
+/* ---------------- boot ---------------- */
+(async function boot(){
+  E = BalatroEngine(DATA);
+  META = E.meta();
+  fillSetup();
+  if (!IS_ARTIFACT) try {                   // is the local app (python app.py) running? Then its C/GPU engines can be used too.
+    const ctl = new AbortController(); setTimeout(() => ctl.abort(), 1500);
+    const r = await fetch(API + '/api/meta', {signal: ctl.signal});
+    if (r.ok) SERVER = (await r.json()).engines;
+  } catch(e) { SERVER = null; }
+  const th = navigator.hardwareConcurrency || 4;
+  let html = `<option value="browser">This browser (${th} threads)</option>`;
+  if (SERVER) html = (SERVER.cpu ? `<option value="cpu">Local app: fast C engine (${SERVER.threads} threads)</option>` : '') +
+                     (SERVER.gpu ? `<option value="gpu">Local app: GPU (OpenCL)</option>` : '') + html + `<option value="py">Local app: Python engine (slow)</option>`;
+  $('#engine').innerHTML = html;
+  $('#enginePill').textContent = SERVER ? (SERVER.cpu ? 'Connected to the local app: fast C engine ready' : 'Connected to the local app') : `Running in your browser · ${th} threads`;
+  const gl = document.querySelector('a[href="/guide.pdf"]');
+  if (gl) { if (location.protocol === 'file:') gl.href = 'GUIDE.pdf'; else if (!SERVER) gl.classList.add('hidden'); }
+  renderConds(); updateSpace();
+  showTab(store.get('tab', 'analyze'));
+  if (SEED_RE.test(seedIn.value)) analyze();
+})();
+</script>
+</body>
+</html>

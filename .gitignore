@@ -1,0 +1,19 @@
+# build / runtime artefacts
+__pycache__/
+*.pyc
+src/bsearch
+src/bsearch.exe
+*.log
+
+# editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# game files (copyrighted, not redistributed; copy your own into data/ to regenerate game_data.json)
+data/game.lua
+data/*.lua
+
+# outdated, superseded by docs/GUIDE.md
+docs/GUIDE.pdf
